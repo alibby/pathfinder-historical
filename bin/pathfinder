@@ -1,0 +1,109 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+
+require_relative '../lib/pathfinder'
+
+begin
+  topology = Pathfinder::Topology.new(ARGV.first).read
+rescue java.lang.NullPointerException => e
+  puts "USAGE: #{File.basename $0} path/to/wkt"
+  exit 1
+rescue java.io.FileNotFoundException => e
+  puts "ERROR: #{e}"
+  exit 2
+end
+
+
+__END__
+
+
+def read_wkt_from_file filename
+  
+  file_reader = FileReader.new filename
+  puts WKTReader.new.read file_reader
+  puts WKTReader.new.read file_reader
+end
+
+read_wkt_from_file File.join(File.dirname(__FILE__), '..', 'data', 'simple.wkt')
+
+
+
+
+
+__END__
+g = Pathfinder::Graph.new
+
+network.geometries.each do |linestring|
+  p1, p2 = linestring.points.first, linestring.points.last
+  g.add_edge linestring, p1, p2
+end
+
+puts "Vertex investigation: "
+g.vertices.each do |v|
+  puts "Vertex: "
+  puts v
+
+  puts g.out_edges(v).length
+end
+
+mls = read_wkt_from_file ARGV.first
+
+Graph = UndirectedSparseMultigraph
+graph = Graph.new
+
+1.upto(mls.num_geometries-1).each do |i|
+  line = mls.geometry_n(i)
+  v1 =  line.point_n(0)
+  v2 = line.point_n(line.num_points - 1)
+  graph.add_edge(line, v1, v2)
+end
+
+puts "*" * 80
+
+v1 = graph.vertices.first
+v2 = graph.get_successors(v1).first
+
+puts "Successor Count form V1: %s" % [ graph.get_successor_count(v1) ]
+puts v1
+puts v2
+
+(edge1, edge2) = Array(graph.find_edge_set(v1, v2))
+
+(edge2, edge1) = [edge1, edge2] if edge1.num_points < edge2.num_points
+
+puts "Edges: "
+puts edge1
+puts edge2
+
+puts "Calculating mid_points"
+
+gf = GeometryFactory.new PrecisionModel.new, 4283
+
+mid_points = edge1.points.map do |pt|
+  puts "=" * 75
+  closest = edge2.closest_point pt
+  puts "Closest on e2 to #{pt} is #{closest}"
+  puts "S: #{pt}"
+  puts "C: #{closest}"
+  mid_point_coordinate = LineSegment.mid_point pt.coordinate, closest.coordinate
+  mid_point = Point.new CoordinateArraySequence.new([mid_point_coordinate].to_java(Coordinate)), gf
+  puts "M: #{mid_point}"
+
+  mid_point
+end
+
+mid_points.each do |pt|
+  puts pt
+end
+
+__END__
+def merge(edge1, edge2)
+  edge1.get_points
+  puts edge1
+  puts edge2
+
+end
+
+def closest_point(pt, edge)
+

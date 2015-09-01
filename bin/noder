@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+
+require_relative '../lib/pathfinder'
+
+
+begin
+  mls = Pathfinder::WKTSource.new(ARGV.first).read
+  noder = Pathfinder::Noder.new mls
+  network = noder.node
+
+  puts network
+rescue java.lang.NullPointerException => e
+  puts "USAGE: #{File.basename $0} path/to/wkt"
+  exit 1
+rescue java.io.FileNotFoundException => e
+  puts "ERROR: #{e}"
+  exit 2
+end
+

@@ -1,0 +1,192 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require_relative '../lib/jruby-setup'
+require 'sinatra'
+require "sinatra/reloader" if development?
+require 'builder'
+require 'pp'
+require 'haml'
+require 'json'
+
+set :views, File.join( File.dirname(__FILE__), '..', 'views' )
+set :public_folder, File.join( File.dirname(__FILE__), '..', 'public')
+
+def node lines
+  col = ArrayList.new()
+  lines.each do |linestring|
+    segstr = NodedSegmentString.new linestring.get_coordinates, nil
+    col.add segstr
+  end
+
+  pm = PrecisionModel.new
+  noder = IteratedNoder.new(pm)
+  noder.computeNodes col
+
+  noded = noder.get_noded_substrings
+
+  linestrings = noded.map do |line|
+    LineString.new line.get_coordinates, pm, 4326
+  end
+
+  geometry_factory = GeometryFactory.new pm, 4326
+  MultiLineString.new linestrings.to_java(LineString), geometry_factory
+end
+
+def read_basenetwork
+  read_wkt File.join(File.dirname(__FILE__), '..', 'base_network.wkt')
+end
+
+def read_wkt filename
+  WKTReader.new.read FileReader.new filename
+end
+
+def read_wkt_from_file filename
+  file_reader = FileReader.new filename
+  WKTReader.new.read file_reader
+end
+
+get '/' do
+  haml :index
+end
+
+get '/geojson' do
+  content_type 'application/geojson'
+  feature = {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-75.435119, 40.111927]
+    }
+  }
+
+  feature.to_json
+end
+
+get '/shapes' do
+  content_type 'application/json'
+  %w/one two three four five/.to_json
+end
+
+get '/gpx' do
+  content_type 'text/xml'
+  File.read(File.join(File.dirname(__FILE__), '..', 'data', 'Plan B ride.gpx'))
+end
+
+get '/example' do
+  content_type 'text/plain'
+  lines = [
+    read_wkt(File.join(File.dirname(__FILE__), '..', 'data','l1.wkt')),
+    read_wkt(File.join(File.dirname(__FILE__), '..', 'data','l2.wkt'))
+  ]
+  noded = node(lines)
+
+  node(lines).to_s + "\n" + noded.geometries.map { |l| l.point_n(0).to_s }.join("\n")
+end
+
+
+get '/basenetwork' do
+  content_type 'text/plain'
+
+  noded = node [
+    read_wkt(File.join(File.dirname(__FILE__), '..', 'data','l1.wkt')),
+    read_wkt(File.join(File.dirname(__FILE__), '..', 'data','l2.wkt'))
+  ]
+
+  geometry_factory = GeometryFactory.new PrecisionModel.new, 4326
+  intersections = MultiPoint.new(
+    noded.geometries.map { |l| l.point_n(0) }.to_java(Point),
+    geometry_factory
+  )
+
+  GeometryCollection.new([noded, intersections].to_java(Geometry), geometry_factory).to_s
+end
+
+__END__
+require_relative '../lib/jruby-setup'
+
+class LineString
+  def points
+    0.upto(num_points-1).map do |i|
+      self.point_n(i)
+    end
+  end
+
+  def closest_point(pt)
+    puts "closest_pt(#{pt})"
+    point_distances = self.points[1..-1].map { |other_pt| [ other_pt, pt.distance(other_pt) ] }
+    point_distances.each do |pt,dist|
+      puts "%s %.24f" % [ pt, dist]
+    end
+    point_distances.sort { |a,b| b.last <=> a.last }.first.first
+  end
+end
+
+require 'pp'
+require 'gippix'
+
+def read_wkt_from_file filename
+  file_reader = FileReader.new filename
+  WKTReader.new.read file_reader
+end
+
+mls = read_wkt_from_file ARGV.first
+
+Graph = UndirectedSparseMultigraph
+graph = Graph.new
+
+1.upto(mls.num_geometries-1).each do |i|
+  line = mls.geometry_n(i)
+  v1 =  line.point_n(0)
+  v2 = line.point_n(line.num_points - 1)
+  graph.add_edge(line, v1, v2)
+end
+
+puts "*" * 80
+
+v1 = graph.vertices.first
+v2 = graph.get_successors(v1).first
+
+puts "Successor Count form V1: %s" % [ graph.get_successor_count(v1) ]
+puts v1
+puts v2
+
+(edge1, edge2) = Array(graph.find_edge_set(v1, v2))
+
+(edge2, edge1) = [edge1, edge2] if edge1.num_points < edge2.num_points
+
+puts "Edges: "
+puts edge1
+puts edge2
+
+puts "Calculating mid_points"
+
+gf = GeometryFactory.new PrecisionModel.new, 4283
+
+mid_points = edge1.points.map do |pt|
+  puts "=" * 75
+  closest = edge2.closest_point pt
+  puts "Closest on e2 to #{pt} is #{closest}"
+  puts "S: #{pt}"
+  puts "C: #{closest}"
+  mid_point_coordinate = LineSegment.mid_point pt.coordinate, closest.coordinate
+  mid_point = Point.new CoordinateArraySequence.new([mid_point_coordinate].to_java(Coordinate)), gf
+  puts "M: #{mid_point}"
+
+  mid_point
+end
+
+mid_points.each do |pt|
+  puts pt
+end
+
+__END__
+def merge(edge1, edge2)
+  edge1.get_points
+  puts edge1
+  puts edge2
+
+end
+
+def closest_point(pt, edge)
+
