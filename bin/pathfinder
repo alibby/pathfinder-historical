@@ -6,7 +6,9 @@ require_relative '../lib/pathfinder'
 
 begin
   topology = Pathfinder::Topology.new(ARGV.first).read
-rescue java.lang.NullPointerException => e
+  pathfinder = Pathfinder.new topology
+  pathfinder.reduce
+rescue TypeError => e
   puts "USAGE: #{File.basename $0} path/to/wkt"
   exit 1
 rescue java.io.FileNotFoundException => e

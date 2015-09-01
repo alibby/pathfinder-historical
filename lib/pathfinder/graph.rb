@@ -6,7 +6,7 @@ java_import "edu.uci.ics.jung.graph.util.Pair"
 java_import "edu.uci.ics.jung.graph.util.EdgeType"
 
 
-module Pathfinder
+class Pathfinder
   class Graph
     def initialize
       @g = UndirectedSparseMultigraph.new

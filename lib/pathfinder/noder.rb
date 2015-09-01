@@ -1,4 +1,4 @@
-module Pathfinder
+class Pathfinder
   class Noder
     attr_reader :mls
 

@@ -1,5 +1,5 @@
 
-module Pathfinder
+class Pathfinder
   class WKTSource
     def initialize filename
       @filename = filename
