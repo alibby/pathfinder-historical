@@ -14,10 +14,7 @@ class Pathfinder
 
     def self.from_topology topology
       g = self.new
-
-      topology.segments.each { |topology_segment|
-        g.add_edge topology_segment
-      }
+      topology.segments.each { |segment| g.add_edge segment }
 
       g
     end
