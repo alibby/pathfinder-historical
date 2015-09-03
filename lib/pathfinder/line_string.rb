@@ -12,5 +12,13 @@
     def last
       @linestring.points.last
     end
+
+    def to_s
+      @linestring.to_s
+    end
+
+    def inspect
+      to_s
+    end
   end
 end

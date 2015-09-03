@@ -5,6 +5,7 @@ java_import "edu.uci.ics.jung.graph.UndirectedSparseMultigraph"
 java_import "edu.uci.ics.jung.graph.util.Pair"
 java_import "edu.uci.ics.jung.graph.util.EdgeType"
 
+require 'pp'
 
 class Pathfinder
   class Graph
@@ -31,12 +32,32 @@ class Pathfinder
       @g.get_out_edges(v)
     end
 
-    def edge_pair(v)
+    def parallel_edges(v1)
+      oe = out_edges v1
 
+      return false if oe.length < 2
+
+      h = Hash.new
+      oe.each { |e|
+        v2 = (endpoints(e) - [v1]).first.to_s
+        h[v2] ||= []
+        h[v2] << e
+      }
+      h.select { |k,v| v.length > 1 }
+    end
+
+    def endpoints e
+      Array(@g.get_endpoints(e).toArray)
     end
 
     def edges
       @g.edges
+    end
+
+    def to_s
+      edges.map { |edge|
+        edge.to_s
+      }.join("\n")
     end
   end
 end

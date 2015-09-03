@@ -10,11 +10,14 @@ require_relative 'pathfinder/line_string'
 class Pathfinder
   attr_reader :graph
 
-  def initialize topology
+  def initialize graph
     @graph = graph
   end
 
   def reduce
-    true
+    graph.vertices.each do |v|
+      pe = graph.parallel_edges v
+      puts pe if pe
+    end
   end
 end
