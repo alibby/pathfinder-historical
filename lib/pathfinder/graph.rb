@@ -9,27 +9,34 @@ require 'pp'
 
 class Pathfinder
   class Graph
+
+    private
+
+    attr_reader :graph
+
+    public
+
     def initialize
-      @g = UndirectedSparseMultigraph.new
+      @graph = UndirectedSparseMultigraph.new
     end
 
     def self.from_topology topology
-      g = self.new
-      topology.segments.each { |segment| g.add_edge segment }
+      new_graph = self.new
+      topology.segments.each { |segment| new_graph.add_edge segment }
 
-      g
+      new_graph
     end
 
     def add_edge e
       raise ArgumentError.new('edge must respond to #first()') unless e.respond_to? :first
       raise ArgumentError.new('edge must respond to #last()') unless e.respond_to? :last
-      @g.add_edge e, Pair.new(e.first, e.last)
+      graph.add_edge e, Pair.new(e.first, e.last)
     end
 
-    def vertices; @g.vertices; end
+    def vertices; graph.vertices; end
 
     def out_edges v
-      @g.get_out_edges(v)
+      graph.get_out_edges(v)
     end
 
     def parallel_edges(v1)
@@ -47,11 +54,11 @@ class Pathfinder
     end
 
     def endpoints e
-      Array(@g.get_endpoints(e).toArray)
+      Array(graph.get_endpoints(e).toArray)
     end
 
     def edges
-      @g.edges
+      graph.edges
     end
 
     def to_s
