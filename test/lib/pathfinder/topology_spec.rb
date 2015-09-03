@@ -1,5 +1,5 @@
 
-require_relative '../test_helper'
+require_relative '../../test_helper'
 
 describe Pathfinder::Topology do
   describe "new with nil filename" do

@@ -1,5 +1,5 @@
 
-require_relative '../test_helper'
+require_relative '../../test_helper'
 
 describe Pathfinder::WKTSource do
   subject { Pathfinder::WKTSource.new('data/wkt/simple.wkt').read }

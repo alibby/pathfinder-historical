@@ -36,7 +36,7 @@ class Pathfinder
       noded = noder.get_noded_substrings
 
       linestrings = noded.map { |line|
-        LineString.new line.get_coordinates, pm, 4326
+        factory.createLineString line.get_coordinates
       }.to_java(LineString)
 
 

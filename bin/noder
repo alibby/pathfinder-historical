@@ -4,7 +4,6 @@ require 'bundler/setup'
 
 require_relative '../lib/pathfinder'
 
-
 begin
   mls = Pathfinder::WKTSource.new(ARGV.first).read
   noder = Pathfinder::Noder.new mls

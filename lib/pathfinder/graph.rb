@@ -12,8 +12,20 @@ class Pathfinder
       @g = UndirectedSparseMultigraph.new
     end
 
-    def add_edge e, v1, v2
-      @g.add_edge e, Pair.new(v1, v2)
+    def self.from_topology topology
+      g = self.new
+
+      topology.segments.each { |topology_segment|
+        g.add_edge topology_segment
+      }
+
+      g
+    end
+
+    def add_edge e
+      raise ArgumentError.new('edge must respond to #first()') unless e.respond_to? :first
+      raise ArgumentError.new('edge must respond to #last()') unless e.respond_to? :last
+      @g.add_edge e, Pair.new(e.first, e.last)
     end
 
     def vertices; @g.vertices; end
@@ -24,6 +36,10 @@ class Pathfinder
 
     def edge_pair(v)
 
+    end
+
+    def edges
+      @g.edges
     end
   end
 end

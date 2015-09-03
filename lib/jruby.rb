@@ -8,6 +8,7 @@ java_import com.vividsolutions.jts.geom.GeometryFactory
 java_import com.vividsolutions.jts.geom.Geometry
 java_import com.vividsolutions.jts.geom.GeometryCollection
 java_import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+
 java_import com.vividsolutions.jts.geom.LineString
 java_import com.vividsolutions.jts.geom.LineSegment
 java_import com.vividsolutions.jts.geom.MultiLineString
@@ -28,7 +29,7 @@ java_import java.util.ArrayList
 
 
 
-class LineString
+class ::LineString
   def points
     0.upto(num_points - 1).map do |i|
       self.point_n(i)
