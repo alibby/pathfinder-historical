@@ -1,5 +1,5 @@
 
-require_relative 'jruby-setup'
+require_relative 'jruby'
 
 require_relative 'pathfinder/wkt_source'
 require_relative 'pathfinder/noder'

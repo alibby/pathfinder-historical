@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'bundler/setup'
-require_relative '../lib/jruby-setup'
+require_relative '../lib/jruby'
 require 'sinatra'
 require "sinatra/reloader" if development?
 require 'builder'
@@ -103,7 +103,7 @@ get '/basenetwork' do
 end
 
 __END__
-require_relative '../lib/jruby-setup'
+require_relative '../lib/jruby'
 
 class LineString
   def points
