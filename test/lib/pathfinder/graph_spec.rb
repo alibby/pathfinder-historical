@@ -10,7 +10,7 @@ describe Pathfinder::Graph do
     end
 
     it "should create" do
-      # puts @graph
+      @graph.wont_be_nil
     end
   end
 
