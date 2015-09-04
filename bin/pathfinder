@@ -7,9 +7,10 @@ require_relative '../lib/pathfinder'
 begin
   topology = Pathfinder::Topology.new(ARGV.first).read
   graph = Pathfinder::Graph.from_topology(topology)
-  pathfinder = Pathfinder.new(graph).reduce
-  p pathfinder
-  # pathfinder.reduce
+  pathfinder = Pathfinder.new(graph)
+  pathfinder.reduce
+
+  puts graph
 rescue TypeError => e
   puts "USAGE: #{File.basename $0} path/to/wkt"
   exit 1

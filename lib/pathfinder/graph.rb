@@ -33,24 +33,35 @@ class Pathfinder
       graph.add_edge e, Pair.new(e.first, e.last)
     end
 
+    def remove_edge e
+      graph.remove_edge e
+    end
+
     def vertices; graph.vertices; end
 
     def out_edges v
       graph.get_out_edges(v)
     end
 
+    # Returns a tuple of parallel edges (if any)
+    # starting from vertex v1.
     def parallel_edges(v1)
-      oe = out_edges v1
+      successors = Array(graph.get_successors(v1))
 
-      return false if oe.length < 2
+      successors
+        .map { |v2| Array(graph.find_edge_set(v1, v2)) }
+        .select { |potential_pair| potential_pair.length > 1 }
+        .flatten
 
-      h = Hash.new
-      oe.each { |e|
-        v2 = (endpoints(e) - [v1]).first.to_s
-        h[v2] ||= []
-        h[v2] << e
-      }
-      h.select { |k,v| v.length > 1 }
+    end
+
+    # Returns the first parallel edge pair it finds.  Falsy
+    # otherwise.
+    #
+    def find_an_edge_pair
+      vertices
+        .map { |v| parallel_edges v }
+        .find { |potential_pair| potential_pair.length > 1 }
     end
 
     def endpoints e
