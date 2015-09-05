@@ -14,9 +14,9 @@ class Pathfinder
       geometry = wkt_filereader.read
 
       if geometry.length == 1
-        geometry.first
+        Pathfinder::MultiLineString.new geometry.first
       else
-        factory.createMultiLineString Array geometry
+        Pathfinder::MultiLineString.new factory.createMultiLineString Array geometry
       end
     end
   end

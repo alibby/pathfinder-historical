@@ -6,6 +6,8 @@ class Pathfinder
       @mls = mls
     end
 
+    private
+
     def pm
       @pm ||= PrecisionModel.new
 
@@ -24,10 +26,12 @@ class Pathfinder
       @factory
     end
 
+    public
+
     def node
       collection = ArrayList.new()
 
-      mls.geometries.each do |linestring|
+      mls.each do |linestring|
         collection.add NodedSegmentString.new linestring.coordinates, nil
       end
 
@@ -37,10 +41,10 @@ class Pathfinder
 
       linestrings = noded.map { |line|
         factory.createLineString line.get_coordinates
-      }.to_java(LineString)
+      }.to_java(::LineString)
 
 
-      factory.createMultiLineString linestrings
+      Pathfinder::MultiLineString.new factory.createMultiLineString linestrings
     end
   end
 end

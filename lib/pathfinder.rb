@@ -6,6 +6,7 @@ require_relative 'pathfinder/noder'
 require_relative 'pathfinder/graph'
 require_relative 'pathfinder/topology'
 require_relative 'pathfinder/line_string'
+require_relative 'pathfinder/multi_line_string'
 require_relative 'pathfinder/parallel_reducer'
 
 class Pathfinder

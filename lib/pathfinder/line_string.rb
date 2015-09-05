@@ -25,6 +25,10 @@
       end
     end
 
+    def coordinates
+      @linestring.coordinates
+    end
+
     def length
       @linestring.points.length
     end
