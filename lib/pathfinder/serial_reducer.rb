@@ -18,20 +18,13 @@ class Pathfinder
 
         edge1, edge2 = consecutive_edges_through_vertex vertex
 
-        puts "=" * 80
-        puts "Candidate vertex: #{vertex}"
-        puts edge1
-        puts edge2
-
         new_edge = edge_from_consecutive_edges edge1, edge2
 
-
         graph.add_edge new_edge
-
         graph.remove_edge edge1
         graph.remove_edge edge2
 
-        vertices_to_remove << vertex if graph.contains_vertex? vertex
+        vertices_to_remove << vertex
       end
 
       vertices_to_remove.each do |v|
@@ -44,7 +37,7 @@ class Pathfinder
     def consecutive_edges_through_vertex vertex
       edge1, edge2 = graph.out_edges(vertex)
 
-      if edge1.last != edge1.first
+      if edge1.last == vertex
         [edge1, edge2]
       else
         [edge2, edge1]

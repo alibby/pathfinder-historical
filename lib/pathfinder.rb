@@ -24,7 +24,7 @@ class Pathfinder
   def reduce
     parallel_reducer = Pathfinder::ParallelReducer.new graph
     parallel_reducer.reduce
-    # serial_reducer = Pathfinder::SerialReducer.new graph
-    # serial_reducer.reduce
+    serial_reducer = Pathfinder::SerialReducer.new graph
+    serial_reducer.reduce
   end
 end
