@@ -4,15 +4,26 @@ require 'bundler/setup'
 
 require_relative '../lib/pathfinder'
 
+def usage_and_exit
+  puts "USAGE: #{File.basename $0} path/to/wkt"
+  exit 1
+end
+
+source_file = ARGV.first
+usage_and_exit if source_file.nil?
+
 begin
-  mls = Pathfinder::WKTSource.new(ARGV.first).read
+  source = Pathfinder::Source.for_resource source_file
+  mls = source.read
   noder = Pathfinder::Noder.new mls
   network = noder.node
 
   puts network
+rescue Pathfinder::Source::UnknownSourceError => e
+  puts "ERROR: Unknown source type #{source_file}"
+  exit 3
 rescue java.lang.NullPointerException => e
-  puts "USAGE: #{File.basename $0} path/to/wkt"
-  exit 1
+  usage_and_exit
 rescue java.io.FileNotFoundException => e
   puts "ERROR: #{e}"
   exit 2

@@ -15,7 +15,22 @@ describe "noder command no arguments" do
   end
 end
 
-describe "noder command with bad filename" do
+describe "noder command with file having unknown extension" do
+  before do
+    @output = %x{ ./bin/noder ./bad_extension.doc }
+    @status = $?
+  end
+
+  it "should present an error message" do
+    @output.must_match /^ERROR:/
+  end
+
+  it "should have exist status 3" do
+    @status.exitstatus.must_equal 3
+  end
+end
+
+describe "noder command with non-existent file" do
   before do
     @output = %x{ ./bin/noder ./does_not_exist.wkt }
     @status = $?
@@ -26,6 +41,6 @@ describe "noder command with bad filename" do
   end
 
   it "should have exit status 2" do
-    assert @status.exitstatus == 2
+    @status.exitstatus.must_equal 2
   end
 end

@@ -1,6 +1,6 @@
 
 require_relative '../../test_helper'
 
-describe ParallelReducer do
+describe Pathfinder::ParallelReducer do
 
 end

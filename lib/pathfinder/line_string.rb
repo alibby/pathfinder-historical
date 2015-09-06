@@ -41,6 +41,18 @@
       to_s
     end
 
+    def hausdorff_distance linestring
+      DiscreteHausdorffDistance.distance self.jts_linestring, linestring.jts_linestring
+    end
+
+    protected
+
+    def jts_linestring
+      @linestring
+    end
+
+    public
+
     def closest_point_to pt
       distance_and_point = map { |line_pt|
         [ line_pt.distance(pt), line_pt ]

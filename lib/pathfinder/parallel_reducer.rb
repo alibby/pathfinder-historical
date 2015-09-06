@@ -1,48 +1,66 @@
 
-class ParallelReducer
-  private
+class Pathfinder
+  class ParallelReducer
+    DISTANCE_THRESHOLD = 7.7659658124485205
+    private
 
-  attr_accessor :graph
+    attr_accessor :graph
 
-  public
+    public
 
-  def initialize graph
-    @graph = graph
-  end
+    def initialize graph
+      @graph = graph
+      @excluded_pairs = Set.new
+    end
 
-  def reduce
-    pair = graph.find_an_edge_pair
+    def reduce
+      while(! (pair = find_an_edge_pair).nil?) do
+        edge1, edge2 = pair
 
-    return unless pair
+        dist = edge1.hausdorff_distance edge2
 
-    edge1, edge2 = pair
+        if too_far_apart? pair
+          @excluded_pairs << pair
+          next
+        end
 
-    # java_import "com.vividsolutions.jts.algorithm.distance.DiscreteHausdorffDistance"
-    # p DiscreteHausdorffDistance
+        new_edge = average_edges edge1, edge2
+        graph.remove_edge edge1
+        graph.remove_edge edge2
+        graph.add_edge new_edge
+      end
+    end
 
-    new_edge = average_edges edge1, edge2
-    graph.remove_edge edge1
-    graph.remove_edge edge2
-    graph.add_edge new_edge
-  end
+    private
 
-  def average_edges edge1, edge2
-    edge1, edge2 = edge2, edge1 if edge2.length > edge1.length
+    def find_an_edge_pair
+      graph.vertices
+        .map { |v| graph.parallel_edges v }
+        .reject { |potential_pair| pair_excluded? potential_pair }
+        .find { |potential_pair| potential_pair.length > 1 }
+    end
 
-    coordinates = edge1
-      .map { |pt1|      [ pt1, edge2.closest_point_to(pt1) ] }
-      .map { |pt1, pt2| [ pt1.coordinate, pt2.coordinate   ] }
-      .map { |c1, c2|   LineSegment.mid_point(c1, c2)        }
-      .to_java(Coordinate)
+    def pair_excluded? pair
+      @excluded_pairs.include? pair
+    end
 
-    pm = PrecisionModel.new
-    factory = GeometryFactory.new pm, 4326
-    Pathfinder::LineString.new factory.create_line_string coordinates
-  end
+    def too_far_apart? pair
+      edge1, edge2 = pair
+      edge1.hausdorff_distance(edge2) > (DISTANCE_THRESHOLD / 10_000)
+    end
 
-  def parallel_edge_pair
-    pari
+    def average_edges edge1, edge2
+      edge1, edge2 = edge2, edge1 if edge2.length > edge1.length
 
-    graph.parallel_edges(v).first
+      coordinates = edge1
+        .map { |pt1|      [ pt1, edge2.closest_point_to(pt1) ] }
+        .map { |pt1, pt2| [ pt1.coordinate, pt2.coordinate   ] }
+        .map { |c1, c2|   LineSegment.mid_point(c1, c2)        }
+        .to_java(Coordinate)
+
+      pm = PrecisionModel.new
+      factory = GeometryFactory.new pm, 4326
+      Pathfinder::LineString.new factory.create_line_string coordinates
+    end
   end
 end

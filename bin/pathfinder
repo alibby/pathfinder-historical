@@ -4,6 +4,11 @@ require 'bundler/setup'
 
 require_relative '../lib/pathfinder'
 
+if ARGV.first.nil?
+  puts "USAGE: #{File.basename $0} path/to/wkt"
+  exit 1
+end
+
 begin
   topology = Pathfinder::Topology.new(ARGV.first).read
   graph = Pathfinder::Graph.from_topology(topology)
@@ -11,9 +16,6 @@ begin
   pathfinder.reduce
 
   puts graph
-rescue TypeError => e
-  puts "USAGE: #{File.basename $0} path/to/wkt"
-  exit 1
 rescue java.io.FileNotFoundException => e
   puts "ERROR: #{e}"
   exit 2

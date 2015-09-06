@@ -1,4 +1,3 @@
-
 require "java"
 
 java_import "edu.uci.ics.jung.graph.UndirectedSparseMultigraph"
@@ -39,8 +38,24 @@ class Pathfinder
 
     def vertices; graph.vertices; end
 
+    def contains_vertex? v
+      graph.contains_vertex v
+    end
+
+    def remove_vertex v
+      graph.remove_vertex v
+    end
+
     def out_edges v
       graph.get_out_edges(v)
+    end
+
+    def edge_count(v = :whole_graph)
+      if v == :whole_graph
+        graph.get_edge_count
+      else
+        Array(graph.get_out_edges(v)).length
+      end
     end
 
     # Returns a tuple of parallel edges (if any)
@@ -53,15 +68,6 @@ class Pathfinder
         .select { |potential_pair| potential_pair.length > 1 }
         .flatten
 
-    end
-
-    # Returns the first parallel edge pair it finds.  Falsy
-    # otherwise.
-    #
-    def find_an_edge_pair
-      vertices
-        .map { |v| parallel_edges v }
-        .find { |potential_pair| potential_pair.length > 1 }
     end
 
     def endpoints e
