@@ -11,20 +11,33 @@ require_relative 'pathfinder/line_string'
 require_relative 'pathfinder/multi_line_string'
 require_relative 'pathfinder/parallel_reducer'
 require_relative 'pathfinder/serial_reducer'
+require_relative 'pathfinder/face_reducer'
+require_relative 'pathfinder/tight_loop_reducer'
 
 require 'gippix'
 
 class Pathfinder
-  attr_reader :graph
+  DISTANCE_THRESHOLD = (7.7659658124485205 / 10_000)
+
+  attr_reader :graph, :reducers
 
   def initialize graph
     @graph = graph
+    @reducers = []
+
+  end
+
+  def add_reducer klass
+    @reducers << klass.new(graph)
+    self
   end
 
   def reduce
-    parallel_reducer = Pathfinder::ParallelReducer.new graph
-    parallel_reducer.reduce
-    serial_reducer = Pathfinder::SerialReducer.new graph
-    serial_reducer.reduce
+    return false if @reducers.length == 0
+
+    loop do
+      results = reducers.map { |reducer| reducer.reduce }
+      break if results.all? { |s| s == false }
+    end
   end
 end

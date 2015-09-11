@@ -3,21 +3,45 @@
 require 'bundler/setup'
 
 require_relative '../lib/pathfinder'
+require 'optparse'
 
-if ARGV.first.nil?
+options = OpenStruct.new( without_face: false, quiet: false )
+
+options_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename $0} [options]"
+
+  opts.on("--file MANDATORY", "WKT file containing noded lines") { |v| options.file = v }
+  opts.on("--without-face", "witout face reduction") { |v| options.without_face = true  }
+  opts.on("--quiet", "surpress final output") { |v| options.quiet = true }
+end
+
+begin
+  options_parser.parse!
+rescue OptionParser::InvalidOption => e
+  $stderr.puts e
+  exit 1
+end
+
+if options.file.nil?
   puts "USAGE: #{File.basename $0} path/to/wkt"
   exit 1
 end
 
 begin
-  topology = Pathfinder::Topology.new(ARGV.first).read
+  topology = Pathfinder::Topology.new(options.file).read
   graph = Pathfinder::Graph.from_topology(topology)
   pathfinder = Pathfinder.new(graph)
+  pathfinder.add_reducer Pathfinder::ParallelReducer
+  pathfinder.add_reducer Pathfinder::SerialReducer
+  pathfinder.add_reducer Pathfinder::TightLoopReducer
+  pathfinder.add_reducer Pathfinder::FaceReducer unless options.without_face
+
   pathfinder.reduce
 
-  puts graph
+  puts graph unless options.quiet
 rescue java.io.FileNotFoundException => e
   puts "ERROR: #{e}"
   exit 2
 end
+
 

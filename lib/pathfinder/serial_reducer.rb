@@ -8,14 +8,16 @@ class Pathfinder
 
     def initialize graph
       @graph = graph
+      @modified = false
     end
 
     def reduce
+      @modified = false
       vertices_to_remove = []
 
       graph.vertices.each do |vertex|
         next if graph.edge_count(vertex) != 2
-
+        @modified = true
         edge1, edge2 = consecutive_edges_through_vertex vertex
 
         new_edge = edge_from_consecutive_edges edge1, edge2
@@ -28,8 +30,11 @@ class Pathfinder
       end
 
       vertices_to_remove.each do |v|
+        @modified = true
         graph.remove_vertex v
       end
+
+      @modified
     end
 
     private

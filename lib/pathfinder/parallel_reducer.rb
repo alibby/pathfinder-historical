@@ -1,7 +1,6 @@
 
 class Pathfinder
   class ParallelReducer
-    DISTANCE_THRESHOLD = 7.7659658124485205
     private
 
     attr_accessor :graph
@@ -11,9 +10,12 @@ class Pathfinder
     def initialize graph
       @graph = graph
       @excluded_pairs = Set.new
+      @modified = false
     end
 
     def reduce
+      @excluded_pairs.clear
+      @modified = false
       while(! (pair = find_an_edge_pair).nil?) do
         edge1, edge2 = pair
 
@@ -23,12 +25,14 @@ class Pathfinder
           @excluded_pairs << pair
           next
         end
-
+        @modified = true
         new_edge = average_edges edge1, edge2
         graph.remove_edge edge1
         graph.remove_edge edge2
         graph.add_edge new_edge
       end
+
+      @modified
     end
 
     private
@@ -46,7 +50,7 @@ class Pathfinder
 
     def too_far_apart? pair
       edge1, edge2 = pair
-      edge1.hausdorff_distance(edge2) > (DISTANCE_THRESHOLD / 10_000)
+      edge1.hausdorff_distance(edge2) > Pathfinder::DISTANCE_THRESHOLD
     end
 
     def average_edges edge1, edge2

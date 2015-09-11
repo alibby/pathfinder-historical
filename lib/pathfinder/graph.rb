@@ -74,8 +74,20 @@ class Pathfinder
       Array(graph.get_endpoints(e).toArray)
     end
 
+    def other_endpoint(v, e)
+      (endpoints(e) - [v]).first
+    end
+
     def edges
       graph.edges
+    end
+
+    def edge(v1, v2)
+      graph.find_edge v1, v2
+    end
+
+    def successors(v)
+      graph.get_successors(v)
     end
 
     def to_s
