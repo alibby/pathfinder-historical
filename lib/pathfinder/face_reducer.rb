@@ -1,23 +1,5 @@
 class Pathfinder
-  class FaceReducer
-    class Face
-      def initialize face_vertices
-        @vertices = face_vertices
-      end
-
-      def furthest_vertex_pair
-        @vertices.combination(2)
-          .map { |a,b| [ a.distance(b), [a,b] ] }
-          .sort { |a,b| a.first <=> b.first }
-          .last
-          .last
-      end
-
-      def to_s
-        @vertices.map { |v| v.to_s }.join(" ")
-      end
-    end
-
+  class FaceReducer < Reducer
     private
 
     attr_accessor :graph
@@ -27,25 +9,95 @@ class Pathfinder
     def initialize graph
       @graph = graph
       @modified = false
+      @visited = []
+    end
+
+    def indexes_for_multi_line_string mls
+      index = LengthIndexedLine.new mls.jts_multi_line_string
+      indexes = mls
+        .map { |ls| [ls.first, ls.last] }
+        .flatten
+        .uniq
+        .map { |pt| index.index_of pt.coordinate }
+    end
+
+    def visited? face
+      @visited.include? face
     end
 
     def reduce
-      puts "REDUCE!"
       @modified = false
 
       face = find_a_face
+      return false unless face
+      return false if visited? face
+
       furthest_pair = face.furthest_vertex_pair
-      puts "Face is: #{face}"
-      puts furthest_pair.map { |v| v.to_s }.join(' ')
+      v1, v2 = furthest_pair
+
+      pair = face.longest_edge_multi_line_strings
+
+      if too_far_apart? pair
+        @visited << face
+        return false
+      end
+
+      mls1, mls2 = pair
+      averaged_line = LineString.average ls_from_mls(mls1), ls_from_mls(mls2)
+      indexes = (indexes_for_multi_line_string(mls1) + indexes_for_multi_line_string(mls2)).sort
+      averaged_mls = MultiLineString.break_line_string averaged_line, indexes
+
+      averaged_mls.each do |ls|
+        @modified = true
+        graph.add_edge ls
+      end
+
+      factory = GeometryFactory.new PrecisionModel.new, 4326
+      indexed_avg = LengthIndexedLine.new averaged_line.jts_line_string
+
+      [mls1, mls2].each do |mls|
+        indexed_mls = LengthIndexedLine.new  mls.jts_multi_line_string
+        points = mls.map { |line| line.first }[1..-1]
+        points.each do |pt|
+          index = indexed_mls.index_of(pt.coordinate)
+          new_pt = factory.create_point indexed_avg.extract_point index
+
+          face.off_face_edges(pt).each do |edge|
+            r_pts = Array(edge)
+            r_pts[ r_pts.first == pt ? 0 : -1 ] = new_pt
+
+            replacement_edge = factory.create_line_string r_pts.map(&:coordinate).to_java(Coordinate)
+            graph.add_edge Pathfinder::LineString.new replacement_edge
+            @modified = true
+            graph.remove_edge edge
+          end
+        end
+      end
+
+      for_removal = face.each_cons(2).map { |a,b| graph.edge(a,b) }
+
+      for_removal.each do |edge|
+        graph.remove_edge edge
+        @modified = true
+      end
+
       @modified
     end
 
     private
 
+    def ls_from_mls mls
+      points = []
+      mls.each { |ls| points += Array(ls) }
+      factory = GeometryFactory.new PrecisionModel.new, 4326
+      coordinates = points.uniq.map(&:coordinate).to_java Coordinate
+      Pathfinder::LineString.new(factory.create_line_string coordinates)
+    end
+
     def find_a_face
       graph.vertices.each do |start_vertex|
-        face = traverse_face start_vertex
-        return Face.new(face) if face
+        face_vertices = traverse_face start_vertex
+        return Face.new(graph, face_vertices) if face_vertices
       end
     end
 

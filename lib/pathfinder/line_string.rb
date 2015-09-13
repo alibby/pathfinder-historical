@@ -41,17 +41,17 @@
       to_s
     end
 
-    def hausdorff_distance linestring
-      DiscreteHausdorffDistance.distance self.jts_linestring, linestring.jts_linestring
+    def hausdorff_distance line_string
+      DiscreteHausdorffDistance.distance self.jts_line_string, line_string.jts_line_string
     end
 
-    protected
+    # protected
 
-    def jts_linestring
+    def jts_line_string
       @linestring
     end
 
-    public
+    # public
 
     def closest_point_to pt
       distance_and_point = map { |line_pt|
@@ -61,6 +61,20 @@
       }.first
 
       distance_and_point.last
+    end
+
+    def self.average(ls1, ls2)
+      ls1, ls2 = ls2, ls1 if ls2.length > ls1.length
+
+      coordinates = ls1
+        .map { |pt1|      [ pt1, ls2.closest_point_to(pt1) ] }
+        .map { |pt1, pt2| [ pt1.coordinate, pt2.coordinate   ] }
+        .map { |c1, c2|   LineSegment.mid_point(c1, c2)        }
+        .to_java(Coordinate)
+
+      pm = PrecisionModel.new
+      factory = GeometryFactory.new pm, 4326
+      Pathfinder::LineString.new factory.create_line_string coordinates
     end
   end
 end

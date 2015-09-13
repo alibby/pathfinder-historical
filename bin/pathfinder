@@ -38,6 +38,7 @@ begin
 
   pathfinder.reduce
 
+  # puts "*" * 80 unless options.quiet
   puts graph unless options.quiet
 rescue java.io.FileNotFoundException => e
   puts "ERROR: #{e}"

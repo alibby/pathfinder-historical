@@ -23,7 +23,7 @@ java_import com.vividsolutions.jts.noding.NodedSegmentString
 java_import com.vividsolutions.jts.noding.SegmentString
 java_import com.vividsolutions.jts.noding.SinglePassNoder
 
-
+java_import com.vividsolutions.jts.linearref.LengthIndexedLine
 java_import com.vividsolutions.jts.algorithm.Angle
 
 java_import com.vividsolutions.jts.algorithm.distance.DiscreteHausdorffDistance

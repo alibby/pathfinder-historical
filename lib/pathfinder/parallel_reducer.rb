@@ -1,6 +1,6 @@
 
 class Pathfinder
-  class ParallelReducer
+  class ParallelReducer < Reducer
     private
 
     attr_accessor :graph
@@ -26,7 +26,7 @@ class Pathfinder
           next
         end
         @modified = true
-        new_edge = average_edges edge1, edge2
+        new_edge = LineString.average edge1, edge2
         graph.remove_edge edge1
         graph.remove_edge edge2
         graph.add_edge new_edge
@@ -48,23 +48,5 @@ class Pathfinder
       @excluded_pairs.include? pair
     end
 
-    def too_far_apart? pair
-      edge1, edge2 = pair
-      edge1.hausdorff_distance(edge2) > Pathfinder::DISTANCE_THRESHOLD
-    end
-
-    def average_edges edge1, edge2
-      edge1, edge2 = edge2, edge1 if edge2.length > edge1.length
-
-      coordinates = edge1
-        .map { |pt1|      [ pt1, edge2.closest_point_to(pt1) ] }
-        .map { |pt1, pt2| [ pt1.coordinate, pt2.coordinate   ] }
-        .map { |c1, c2|   LineSegment.mid_point(c1, c2)        }
-        .to_java(Coordinate)
-
-      pm = PrecisionModel.new
-      factory = GeometryFactory.new pm, 4326
-      Pathfinder::LineString.new factory.create_line_string coordinates
-    end
   end
 end

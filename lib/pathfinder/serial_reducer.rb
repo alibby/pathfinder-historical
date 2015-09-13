@@ -54,8 +54,8 @@ class Pathfinder
       factory = GeometryFactory.new pm, 4326
 
       coordinates_for_new_edge = (Array(edge1.coordinates) + Array(edge2.coordinates)[1..-1]).to_java(Coordinate)
-      jts_linestring = factory.create_line_string coordinates_for_new_edge
-      Pathfinder::LineString.new jts_linestring
+      jts_line_string = factory.create_line_string coordinates_for_new_edge
+      Pathfinder::LineString.new jts_line_string
     end
   end
 end
