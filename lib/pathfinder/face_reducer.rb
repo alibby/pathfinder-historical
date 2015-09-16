@@ -47,10 +47,7 @@ class Pathfinder
       indexes = (indexes_for_multi_line_string(mls1) + indexes_for_multi_line_string(mls2)).sort
       averaged_mls = MultiLineString.break_line_string averaged_line, indexes
 
-      averaged_mls.each do |ls|
-        @modified = true
-        graph.add_edge ls
-      end
+      averaged_mls.each { |ls| add_edge ls }
 
       factory = GeometryFactory.new PrecisionModel.new, 4326
       indexed_avg = LengthIndexedLine.new averaged_line.jts_line_string
@@ -67,24 +64,43 @@ class Pathfinder
             r_pts[ r_pts.first == pt ? 0 : -1 ] = new_pt
 
             replacement_edge = factory.create_line_string r_pts.map(&:coordinate).to_java(Coordinate)
-            graph.add_edge Pathfinder::LineString.new replacement_edge
-            @modified = true
-            graph.remove_edge edge
+            add_edge Pathfinder::LineString.new replacement_edge
+            remove_edge edge
           end
         end
       end
 
       for_removal = face.each_cons(2).map { |a,b| graph.edge(a,b) }
+      for_removal.each { |edge| remove_edge edge }
 
-      for_removal.each do |edge|
-        graph.remove_edge edge
+      @modified
+    end
+
+    private
+
+    def remove_edge line_string
+      logger = Pathfinder.logger
+
+      if ! graph.remove_edge line_string
+        logger.error(self.class.name) { "Edge remove failed: #{line_string}" }
+      else
         @modified = true
       end
 
       @modified
     end
 
-    private
+    def add_edge line_string
+      logger = Pathfinder.logger
+
+      if ! graph.add_edge line_string
+        logger.error(self.class.name) { "Edge addition failed: #{line_string}" }
+      else
+        @modified = true
+      end
+
+      @modified
+    end
 
     def ls_from_mls mls
       points = []

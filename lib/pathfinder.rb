@@ -16,17 +16,20 @@ require_relative 'pathfinder/face_reducer'
 require_relative 'pathfinder/face'
 require_relative 'pathfinder/tight_loop_reducer'
 
+require 'logger'
 require 'gippix'
 
 class Pathfinder
   DISTANCE_THRESHOLD = (7.7659658124485205 / 10_000)
+  LOGGER = Logger.new STDERR
+  LOGGER.sev_threshold = Logger::DEBUG
+  LOGGER.progname = 'pathfinder'
 
   attr_reader :graph, :reducers
 
   def initialize graph
     @graph = graph
     @reducers = []
-
   end
 
   def add_reducer klass
@@ -41,5 +44,9 @@ class Pathfinder
       results = reducers.map { |reducer| reducer.reduce }
       break if results.all? { |s| s == false }
     end
+  end
+
+  def self.logger
+    Pathfinder::LOGGER
   end
 end
