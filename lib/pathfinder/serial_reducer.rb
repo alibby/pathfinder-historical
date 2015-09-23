@@ -1,46 +1,31 @@
 class Pathfinder
-  class SerialReducer
-    private
-
-    attr_accessor :graph
-
-    public
-
-    def initialize graph
-      @graph = graph
-      @modified = false
-    end
+  class SerialReducer < Reducer
 
     def reduce
-      @modified = false
+      modified! false
+
       vertices_to_remove = []
 
       graph.vertices.each do |vertex|
         next if graph.edge_count(vertex) != 2
-        @modified = true
         edge1, edge2 = consecutive_edges_through_vertex vertex
 
         new_edge = edge_from_consecutive_edges edge1, edge2
 
-        graph.add_edge new_edge
-        graph.remove_edge edge1
-        graph.remove_edge edge2
-
-        vertices_to_remove << vertex
+        add_edge new_edge
+        remove_edge edge1
+        remove_edge edge2
       end
 
-      vertices_to_remove.each do |v|
-        @modified = true
-        graph.remove_vertex v
-      end
-
-      @modified
+      modified?
     end
 
     private
 
+
     def consecutive_edges_through_vertex vertex
       edge1, edge2 = graph.out_edges(vertex)
+
 
       if edge1.last == vertex
         [edge1, edge2]

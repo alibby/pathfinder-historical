@@ -22,7 +22,7 @@ require 'gippix'
 class Pathfinder
   DISTANCE_THRESHOLD = (7.7659658124485205 / 10_000)
   LOGGER = Logger.new STDERR
-  LOGGER.sev_threshold = Logger::DEBUG
+  LOGGER.sev_threshold = Logger::ERROR
   LOGGER.progname = 'pathfinder'
 
   attr_reader :graph, :reducers
@@ -42,6 +42,7 @@ class Pathfinder
 
     loop do
       results = reducers.map { |reducer| reducer.reduce }
+      open('./graph.wkt', 'w') { |fh| fh.puts graph }
       break if results.all? { |s| s == false }
     end
   end

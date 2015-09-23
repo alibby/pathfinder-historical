@@ -31,5 +31,14 @@ describe Pathfinder::LineString do
     end
   end
 
+  describe "average" do
+    before do
+      
+    end
+    it "should average lines" do
+
+    end
+  end
+
 end
 

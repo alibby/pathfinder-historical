@@ -36,6 +36,10 @@ class Pathfinder
       graph.remove_edge e
     end
 
+    def contains_edge? e
+      graph.contains_edge e
+    end
+
     def vertices; graph.vertices; end
 
     def contains_vertex? v

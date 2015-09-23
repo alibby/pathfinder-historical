@@ -38,6 +38,8 @@ class Pathfinder
     end
 
     def off_face_edges v
+      logger = Pathfinder.logger
+      logger.debug("%s#%s" % [ self.class.name, 'off_face_edges' ]) { v.to_s }
       successors = Array(graph.successors v)
       (successors - vertices).map { |v2| graph.edge(v, v2) }
     end
@@ -59,13 +61,13 @@ class Pathfinder
     public
 
     def furthest_vertex_pair
-      @furthest_edge_pair ||= @vertices.combination(2)
+      @furthest_vertex_pair ||= @vertices.combination(2)
         .map { |a,b| [ a.distance(b), [a,b] ] }
         .sort { |a,b| a.first <=> b.first }
         .last
         .last
 
-      @furthest_edge_pair
+      @furthest_vertex_pair
     end
 
     def to_s

@@ -7,6 +7,10 @@
       @linestring = linestring
     end
 
+    def == ls
+      @linestring == ls
+    end
+
     def first
       @linestring.points.first
     end
@@ -43,6 +47,19 @@
 
     def hausdorff_distance line_string
       DiscreteHausdorffDistance.distance self.jts_line_string, line_string.jts_line_string
+    end
+
+    def indexed_line
+      @indexed_line ||= LengthIndexedLine.new  LineSequencer.sequence self.jts_line_string
+    end
+
+    def index pt
+      indexed_line.index_of pt.coordinate
+    end
+
+    def point_at index
+      factory = GeometryFactory.new PrecisionModel.new, 4326
+      factory.create_point(indexed_line.extract_point(index))
     end
 
     # protected

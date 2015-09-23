@@ -34,6 +34,18 @@ class Pathfinder
       DiscreteHausdorffDistance.distance self.jts_multi_line_string, line_string.jts_multi_line_string
     end
 
+    def indexed_line
+      @indexed_line ||= LengthIndexedLine.new  LineSequencer.sequence self.jts_multi_line_string
+    end
+
+    def index pt
+      indexed_line.index_of pt.coordinate
+    end
+
+    def point_at index
+      factory = GeometryFactory.new PrecisionModel.new, 4326
+      factory.create_point indexed_line.extract_point index
+    end
 
     def self.break_line_string ls, indexes
       factory = GeometryFactory.new PrecisionModel.new, 4326
@@ -43,11 +55,23 @@ class Pathfinder
       new factory.create_multi_line_string line_strings
     end
 
-    private
+    # private
+
+    def points
+      points = []
+      self.each { |ls| points += Array(ls) }
+      points
+    end
 
     def self.ls_from_mls mls
+      logger = Pathfinder.logger
+      logger.debug("%s.ls_from_mls" % [ name ]) { mls.to_s }
+      sequenced = LineSequencer.sequence mls.jts_multi_line_string
+
+      return Pathfinder::LineString.new sequenced if sequenced.instance_of? ::LineString
+
       points = []
-      mls.each { |ls| points += Array(ls) }
+      Pathfinder::MultiLineString.new(sequenced).each { |ls| points += Array(ls) }
       factory = GeometryFactory.new PrecisionModel.new, 4326
       coordinates = points.uniq.map(&:coordinate).to_java Coordinate
       Pathfinder::LineString.new(factory.create_line_string coordinates)

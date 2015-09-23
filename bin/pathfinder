@@ -29,18 +29,19 @@ end
 
 begin
   logger = Pathfinder.logger
-  logger.info "Pathfinder starting"
+  logger.info "Pathfinder starting #{$$}"
   topology = Pathfinder::Topology.new(options.file).read
   logger.info "Read base network topology from #{options.file}"
   graph = Pathfinder::Graph.from_topology(topology)
   pathfinder = Pathfinder.new(graph)
-  logger.info "Adding reducers"
   pathfinder.add_reducer Pathfinder::ParallelReducer
   pathfinder.add_reducer Pathfinder::SerialReducer
   pathfinder.add_reducer Pathfinder::TightLoopReducer
   pathfinder.add_reducer Pathfinder::FaceReducer unless options.without_face
 
+  logger.info "Using reducers #{ pathfinder.reducers.map { |r| r.class.name }.join(', ')}"
   logger.info "Performing reduction"
+
   pathfinder.reduce
   logger.info "Reduction complete."
 
