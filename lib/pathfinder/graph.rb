@@ -102,9 +102,9 @@ class Pathfinder
     end
 
     def to_s
-      edges.map { |edge|
-        edge.to_s
-      }.join("\n")
+      factory = GeometryFactory.new PrecisionModel.new, 4326
+      linestrings = Array(edges).map(&:jts_line_string).to_java(::LineString)
+      factory.create_multi_line_string(linestrings).to_s
     end
   end
 end
