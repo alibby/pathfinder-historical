@@ -21,11 +21,62 @@ require 'gippix'
 
 class Pathfinder
   DISTANCE_THRESHOLD = (7.7659658124485205 / 10_000)
-  LOGGER = Logger.new STDERR
-  LOGGER.sev_threshold = Logger::ERROR
-  LOGGER.progname = 'pathfinder'
+  @@options = nil
 
   attr_reader :graph, :reducers
+
+  class NullLogger
+    def debug(*); end
+    def info(*); end
+    def warn(*); end
+    def error(*); end
+    def fatal(*); end
+  end
+
+  def self.run
+    logger = Pathfinder.logger
+    logger.info "Pathfinder starting #{$$}"
+    topology = Pathfinder::Topology.new(options.file).read
+    logger.info "Read base network topology from #{options.file}"
+    graph = Pathfinder::Graph.from_topology(topology)
+    pathfinder = Pathfinder.new(graph)
+    pathfinder.add_reducer Pathfinder::ParallelReducer
+    pathfinder.add_reducer Pathfinder::SerialReducer
+    pathfinder.add_reducer Pathfinder::TightLoopReducer
+    pathfinder.add_reducer Pathfinder::FaceReducer unless options.without_face
+
+    logger.info "Using reducers #{ pathfinder.reducers.map { |r| r.class.name }.join(', ')}"
+    logger.info "Performing reduction"
+
+    pathfinder.reduce
+    logger.info "Reduction complete."
+
+    unless options.quiet
+      logger.info "Outputting new network"
+      puts graph
+    end
+  end
+
+  def self.options
+    @@options
+  end
+
+  def self.configure options
+    raise "Can't reconfigure pathfinder" if @@options
+    @@options = options
+  end
+
+  def self.logger progname = 'pathfinder'
+    if options.log
+      logger = Logger.new options.log
+      logger.sev_threshold = options.log_level
+      logger.progname = progname
+      logger
+    else
+      NullLogger.new
+    end
+  end
+
 
   def initialize graph
     @graph = graph
@@ -37,7 +88,7 @@ class Pathfinder
     self
   end
 
-  def reduce
+  def call
     return false if @reducers.length == 0
 
     loop do
@@ -47,7 +98,7 @@ class Pathfinder
     end
   end
 
-  def self.logger
-    Pathfinder::LOGGER
+  def reduce
+    call
   end
 end

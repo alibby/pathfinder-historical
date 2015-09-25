@@ -22,16 +22,17 @@ class Pathfinder
     end
 
     def remove_edge line_string
-      logger = Pathfinder.logger
+      logger = Pathfinder.logger "#{self.class.name}#remove_edge"
 
       if ! graph.contains_edge? line_string
-        logger.debug("#{self.class.name}#remove_edge") { "Graph does not contain #{line_string}" }
+        logger.debug "Graph does not contain #{line_string}"
+        logger.debug "LineString class: #{line_string.class.name}"
       end
 
       if ! graph.remove_edge line_string
-        logger.error(self.class.name) { "Edge remove failed: #{line_string}" }
+        logger.error "Edge remove failed: #{line_string}"
       else
-        logger.debug(self.class.name) { "Edge Removal: #{line_string}" }
+        logger.debug "Edge Removal: #{line_string}"
         @modified = true
       end
 

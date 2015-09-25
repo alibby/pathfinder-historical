@@ -19,6 +19,13 @@ class Pathfinder
       @graph = UndirectedSparseMultigraph.new
     end
 
+    def self.from_multi_line_string mls
+      new_graph = self.new
+      mls.each { |segment| new_graph.add_edge segment }
+
+      new_graph
+    end
+
     def self.from_topology topology
       new_graph = self.new
       topology.segments.each { |segment| new_graph.add_edge segment }

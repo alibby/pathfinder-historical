@@ -15,68 +15,73 @@ class Pathfinder
     def reduce
       modified! false
       visited.clear
-      logger = Pathfinder.logger
+      logger = Pathfinder.logger 'FaceReducer#reduce'
 
       loop do
         face = find_a_face
-        logger.debug(self.class.name) { "Found face: " }
-        logger.debug(self.class.name) { face.to_s }
+        logger.debug "Found face: "
+        logger.debug face.to_s
         break unless face
         begin
           v1, v2 = face.furthest_vertex_pair
           pair = face.longest_edge_multi_line_strings
 
-          logger.debug(self.class.name) { "Furthest vergexes: #{ [v1, v2].map { |v| v.to_s }.join(' ') }" }
+          logger.debug "Furthest vertexes: #{ [v1, v2].map { |v| v.to_s }.join(' ') }"
           next if too_far_apart? pair
           averaged_line = replace_long_linestrings *pair
           join_adjacents_to_averaged_line face, averaged_line
+          pair.each { |mls|
+            mls.each { |ls|
+              logger.debug ls.first.to_s
+              logger.debug ls.last.to_s
+              e = graph.edge ls.first, ls.last
+              logger.debug e.to_s
+              remove_edge e if e
+            }
+          }
+
         rescue AssertionFailedException => e
           logger.warn(self.class.name) { e.to_s }
         end
       end
 
-      logger.debug(self.class.name) { "#reduce returning modifcation status #{modified?}" }
+      logger.debug "#reduce returning modifcation status #{modified?}"
       modified?
     end
 
     private
 
     def find_a_face
-      logger = Pathfinder.logger
+      logger = Pathfinder.logger 'FaceReducer#find_a_face'
 
-      logger.debug('find_a_face') { 'entry'}
       # logger.debug('find_a_face') { visited.map { |p| p.to_s }.join ' ' }
       graph.vertices.each do |start_vertex|
-        logger.debug('find_a_face') { "Start Vertex: #{start_vertex}" }
-        logger.debug('find_a_face') { "Visited? #{visited? start_vertex}"}
+        logger.debug "#{visited?(start_vertex) ? "Visited" : "Unvisited"} Vertex: #{start_vertex}"
         next if visited? start_vertex
+        visit! start_vertex
         face_vertices = traverse_face start_vertex
         next unless face_vertices
         visit! face_vertices
 
         if face_vertices.length < 3
-          logger.warn('FaceReducer.find_a_face') {
-            "Danger, found small face - #{face_vertices.map { |p| p.to_s }.join(' ')}" 
-          }
+          logger.warn "Danger, found small face - #{face_vertices.map { |p| p.to_s }.join(' ')}"
           next
         end
 
         if face_vertices[1..-2] != face_vertices[1..-2].uniq
-          logger.warn('FaceReducer.find_a_face') { "Danger, face has internal point duplication" }
+          logger.warn "Danger, face has internal point duplication"
           next
         end
-        $stderr.puts "X" * 80
-        $stderr.puts face_vertices
+
+        # logger.debug "Face vertices: #{ face_vertices.map { |v| v.to_s }.join(' ') }"
 
         return(Face.new(graph, face_vertices)) if(face_vertices)
       end
-      logger.debug('find_a_face') { "returning nil, didn't find a face" }
+      logger.debug "returning nil, didn't find a face"
       return nil
     end
 
     def traverse_face(start_v, current_v = start_v, accum = [])
-      logger = Pathfinder.logger
-      logger.debug('traverse_face') { "%s %s %s" % [ start_v, current_v, accum.length ] }
       return false if accum.length > 4
       return accum if current_v == start_v and accum.length > 0
 
@@ -90,7 +95,11 @@ class Pathfinder
     end
 
     def replace_long_linestrings mls1, mls2
-      indexes = (indexes_for_multi_line_string(mls1) + indexes_for_multi_line_string(mls2)).sort
+      logger = Pathfinder.logger 'MEMEMEMEME'
+      indexes = (indexes_for_multi_line_string(mls1) + indexes_for_multi_line_string(mls2)).sort.uniq
+
+      logger.debug "Indexes: #{indexes}"
+
       averaged_line = average_line mls1, mls2
 
       logger = Pathfinder.logger
@@ -99,8 +108,20 @@ class Pathfinder
         add_edge ls
       end
 
-      mls1.each { |ls| remove_edge ls }
-      mls2.each { |ls| remove_edge ls }
+      # [mls1, mls2].each { |mls|
+      #   mls.each { |ls|
+      #     logger.debug ls.first.to_s
+      #     logger.debug ls.last.to_s
+      #     e = graph.edge ls.first, ls.last
+      #     logger.debug e.to_s
+      #     remove_edge e if e
+      #   }
+      # }
+      # mls1.each { |ls|
+      #   e = graph.edge(ls.first, ls.last)
+      #   remove_edge e
+      # }
+      # mls2.each { |ls| remove_edge ls }
 
       averaged_line
     end
@@ -121,24 +142,24 @@ class Pathfinder
     end
 
     def join_adjacents_to_averaged_line face, averaged_line
-      logger = Pathfinder.logger
+      logger = Pathfinder.logger "FaceReducer#join_adjacents_to_averaged_line"
       factory = GeometryFactory.new PrecisionModel.new, 4326
       furthest_pair = face.furthest_vertex_pair
 
       for_removal = Set.new
       face.longest_edge_multi_line_strings.each do |mls|
-        # logger.debug(self.class.name) { "Working with MLS item: " }
-        # logger.debug(self.class.name) { mls.to_s }
+        logger.debug "Working with MLS item: "
+        logger.debug mls.to_s
         first_points = mls.map { |line| line.first } - furthest_pair
         first_points.each do |pt|
-          # logger.debug(self.class.name) { "Working with pt: #{pt}" }
+          logger.debug "Working with pt: #{pt}"
           index = mls.index pt
-          # logger.debug(self.class.name) { "Index for new point on mls is: #{index}" }
+          logger.debug "Index for new point on mls is: #{index}"
           new_pt = averaged_line.point_at index
-          # logger.debug(self.class.name) { "New Point: #{new_pt}" }
+          logger.debug "New Point: #{new_pt}"
           face.off_face_edges(pt).each do |edge|
-            # logger.debug(self.class.name) { "Off Face Edge: " }
-            # logger.debug(self.class.name) { edge.to_s }
+            logger.debug "Off Face Edge: "
+            logger.debug edge.to_s
             r_pts = Array(edge)
             r_pts[ r_pts.first == pt ? 0 : -1 ] = new_pt
 

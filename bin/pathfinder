@@ -5,7 +5,7 @@ require 'bundler/setup'
 require_relative '../lib/pathfinder'
 require 'optparse'
 
-options = OpenStruct.new( without_face: false, quiet: false )
+options = OpenStruct.new( without_face: false, quiet: false, log_level: Logger::Severity::ERROR )
 
 options_parser = OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename $0} [options]"
@@ -13,6 +13,25 @@ options_parser = OptionParser.new do |opts|
   opts.on("--file MANDATORY", "WKT file containing noded lines") { |v| options.file = v }
   opts.on("--without-face", "witout face reduction") { |v| options.without_face = true  }
   opts.on("--quiet", "surpress final output") { |v| options.quiet = true }
+  opts.on("--log [OPTIONAL]", "Turn on logging, specify file or STDERR is default") { |v|
+    options.log = v ? File.open(v, 'a') : STDERR
+  }
+  opts.on("--log-level MANDATORY", "Log level: debug, info, warn, error, fatal") { |v|
+    options.log ||= STDERR
+    level = {
+      debug: Logger::Severity::DEBUG,
+      info: Logger::Severity::INFO,
+      warn: Logger::Severity::WARN,
+      error: Logger::Severity::ERROR,
+      fatal: Logger::Severity::FATAL
+    }[v.to_sym]
+
+    if level.nil?
+      $stderr.puts "Log level #{v} unknown, defaulting to 'error'"
+      level = Logger::Severity::ERROR
+    end
+    options.log_level = level.to_i
+  }
 end
 
 begin
@@ -28,27 +47,8 @@ if options.file.nil?
 end
 
 begin
-  logger = Pathfinder.logger
-  logger.info "Pathfinder starting #{$$}"
-  topology = Pathfinder::Topology.new(options.file).read
-  logger.info "Read base network topology from #{options.file}"
-  graph = Pathfinder::Graph.from_topology(topology)
-  pathfinder = Pathfinder.new(graph)
-  pathfinder.add_reducer Pathfinder::ParallelReducer
-  pathfinder.add_reducer Pathfinder::SerialReducer
-  pathfinder.add_reducer Pathfinder::TightLoopReducer
-  pathfinder.add_reducer Pathfinder::FaceReducer unless options.without_face
-
-  logger.info "Using reducers #{ pathfinder.reducers.map { |r| r.class.name }.join(', ')}"
-  logger.info "Performing reduction"
-
-  pathfinder.reduce
-  logger.info "Reduction complete."
-
-  unless options.quiet
-    logger.info "Outputting new network"
-    puts graph
-  end
+  Pathfinder.configure options
+  Pathfinder.run
 rescue java.io.FileNotFoundException => e
   puts "ERROR: #{e}"
   exit 2

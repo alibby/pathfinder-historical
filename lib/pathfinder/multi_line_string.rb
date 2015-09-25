@@ -64,8 +64,8 @@ class Pathfinder
     end
 
     def self.ls_from_mls mls
-      logger = Pathfinder.logger
-      logger.debug("%s.ls_from_mls" % [ name ]) { mls.to_s }
+      # logger = Pathfinder.logger
+      # logger.debug("%s.ls_from_mls" % [ name ]) { mls.to_s }
       sequenced = LineSequencer.sequence mls.jts_multi_line_string
 
       return Pathfinder::LineString.new sequenced if sequenced.instance_of? ::LineString
