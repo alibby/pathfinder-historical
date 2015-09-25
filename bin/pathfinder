@@ -10,13 +10,13 @@ options = OpenStruct.new( without_face: false, quiet: false, log_level: Logger::
 options_parser = OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename $0} [options]"
 
-  opts.on("--file MANDATORY", "WKT file containing noded lines") { |v| options.file = v }
+  opts.on("--file noded-network.wkt", "WKT file containing noded lines") { |v| options.file = v }
   opts.on("--without-face", "witout face reduction") { |v| options.without_face = true  }
   opts.on("--quiet", "surpress final output") { |v| options.quiet = true }
-  opts.on("--log [OPTIONAL]", "Turn on logging, specify file or STDERR is default") { |v|
+  opts.on("--log [logfile.log]", "Turn on logging, specify file or STDERR is default") { |v|
     options.log = v ? File.open(v, 'a') : STDERR
   }
-  opts.on("--log-level MANDATORY", "Log level: debug, info, warn, error, fatal") { |v|
+  opts.on("--log-level MANDATORY", "Log level: debug, info, warn, error, fatal", "implies --log if not already set.") { |v|
     options.log ||= STDERR
     level = {
       debug: Logger::Severity::DEBUG,
