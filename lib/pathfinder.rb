@@ -93,7 +93,7 @@ class Pathfinder
 
     loop do
       results = reducers.map { |reducer| reducer.reduce }
-      open('./graph.wkt', 'w') { |fh| fh.puts graph }
+      # open('./graph.wkt', 'w') { |fh| fh.puts graph }
       break if results.all? { |s| s == false }
     end
   end
