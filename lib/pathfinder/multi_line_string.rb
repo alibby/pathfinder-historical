@@ -6,6 +6,11 @@ class Pathfinder
       @mls = mls
     end
 
+    def self.from_wkt wkt
+      reader = WKTreader.new
+      new reader.read wkt.to_s
+    end
+
     def each
       if block_given?
         @mls.geometries.each { |g| yield Pathfinder::LineString.new g }

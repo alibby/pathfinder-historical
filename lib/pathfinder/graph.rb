@@ -26,13 +26,6 @@ class Pathfinder
       new_graph
     end
 
-    def self.from_topology topology
-      new_graph = self.new
-      topology.segments.each { |segment| new_graph.add_edge segment }
-
-      new_graph
-    end
-
     def add_edge e
       raise ArgumentError.new('edge must respond to #first()') unless e.respond_to? :first
       raise ArgumentError.new('edge must respond to #last()') unless e.respond_to? :last

@@ -2,38 +2,6 @@
 require_relative '../../test_helper'
 
 describe Pathfinder::Graph do
-  describe 'from_topology' do
-    before do
-      @topology = Minitest::Mock.new
-      @topology.expect :segments, [[:a,:b], [:b, :c]]
-      @graph = Pathfinder::Graph.from_topology @topology
-    end
-
-    it "should create" do
-      @graph.wont_be_nil
-    end
-  end
-
-
-  describe '#endpoints' do
-    before do
-      @topology = Minitest::Mock.new
-      @topology.expect :segments, [[:a,:b,:c], [:a, :d, :c]]
-      @graph = Pathfinder::Graph.from_topology @topology
-      @endpoints = @graph.endpoints [:a, :b, :c]
-    end
-
-    it "should return a tuple of the endpoints" do
-      @endpoints.length.must_equal 2
-    end
-
-    it "returned tuple should contain both endpoints :a and :c" do
-      (@endpoints - [:a]).must_equal [:c]
-      (@endpoints - [:c]).must_equal [:a]
-    end
-  end
-
-
   describe '#add_edge' do
     describe "when passed something with no first() method" do
       before do

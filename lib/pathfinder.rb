@@ -6,7 +6,6 @@ require_relative 'pathfinder/source/wkt_file'
 require_relative 'pathfinder/source/gpx_directory'
 require_relative 'pathfinder/noder'
 require_relative 'pathfinder/graph'
-require_relative 'pathfinder/topology'
 require_relative 'pathfinder/line_string'
 require_relative 'pathfinder/multi_line_string'
 require_relative 'pathfinder/reducer'
@@ -37,9 +36,9 @@ class Pathfinder
   def self.run
     logger = Pathfinder.logger
     logger.info "Pathfinder starting #{$$}"
-    topology = Pathfinder::Topology.new(options.file).read
-    logger.info "Read base network topology from #{options.file}"
-    graph = Pathfinder::Graph.from_topology(topology)
+    mls = Pathfinder::MultiLineString.from_wkt(File.read(options.file))
+    logger.info "Read base network from #{options.file}"
+    graph = Pathfinder::Graph.from_multi_line_string(mls)
     pathfinder = Pathfinder.new(graph)
     pathfinder.add_reducer Pathfinder::ParallelReducer
     pathfinder.add_reducer Pathfinder::SerialReducer
