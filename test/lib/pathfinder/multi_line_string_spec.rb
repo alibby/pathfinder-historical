@@ -1,11 +1,15 @@
 require_relative '../../test_helper'
 
 describe Pathfinder::MultiLineString do
-  describe  '#to_s' do
-    before do
-      @jts_mls = Minitest::Mock.new
-      @jts_mls.expect(:to_s, 'MULTILINESTRING ()')
-      @pf_mls = Pathfinder::MultiLineString.new @jts_mls
+  describe 'from_wkt' do
+
+    let(:mls) {
+      wkt = File.read(File.join(File.dirname(__FILE__), '..','..', 'data','wkt','face-001.wkt'))
+      Pathfinder::MultiLineString.from_wkt wkt
+    }
+
+    it "should have points" do
+      mls.length.must_be :>, 0
     end
 
     it "#to_s wraps the internal MultiLineString" do

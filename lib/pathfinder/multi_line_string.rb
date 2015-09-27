@@ -7,7 +7,7 @@ class Pathfinder
     end
 
     def self.from_wkt wkt
-      reader = WKTreader.new
+      reader = WKTReader.new
       new reader.read wkt.to_s
     end
 
