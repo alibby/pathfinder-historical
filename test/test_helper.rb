@@ -28,8 +28,8 @@ module CreateJumpOnFail
   def before_teardown
     super
     if self.failures.length > 0
-      @failures ||= []
-      @failures << self.name
+      # @failures ||= []
+      # @failures << self.name
       JumpResultBuilder.new(self).build if self.failures.length > 0
     end
   end
@@ -50,9 +50,9 @@ class JumpResultBuilder
 
   def build
     FileUtils.mkdir_p destination_folder
-    File.write initial_file, test.instance_variable_get(:@initial).to_s
-    File.write expected_file, test.instance_variable_get(:@expected).to_s
-    File.write actual_file, test.instance_variable_get(:@actual).to_s
+    File.write initial_file, test.initial.to_s
+    File.write expected_file, test.expected.to_s
+    File.write actual_file, test.actual_file.to_s
 
     output = ERB.new(File.read TEMPLATE).result(binding)
     File.write jump_file, output
@@ -60,7 +60,7 @@ class JumpResultBuilder
 
   def bounding_box
     return @bounding_box if @bounding_box
-    initial = test.instance_variable_get(:@initial).to_multi_line_string
+    initial = test.initial.to_multi_line_string
     @bounding_box = initial.envelope
   end
 

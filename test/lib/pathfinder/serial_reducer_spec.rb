@@ -2,31 +2,33 @@
 require_relative '../../test_helper'
 
 describe Pathfinder::SerialReducer do
+  include CreateJumpOnFail
+
   describe "a single linestring" do
-    before do
-      @graph = graph_from_wkt "MULTILINESTRING((0 1, 1 1),(0 0, -1 -1))"
-      @reducer = Pathfinder::SerialReducer.new @graph
-    end
+    let(:initial) { graph_from_wkt_file('serial-001.wkt') }
+    let(:actual) { graph_from_wkt_file('serial-001.wkt') }
+    let(:expected) { graph_from_wkt_file('serial-001-expected.wkt') }
+    let(:reducer) { Pathfinder::SerialReducer.new actual }
 
     it "should perform no reductions" do
-      @graph.edges.length.must_equal 2
-      @reducer.reduce.must_equal false
-      @graph.edges.length.must_equal 2
-      # @graph.edges.first.to_s.must_equal "LINESTRING (0 0, 0 1, 1 1)"
+      actual.edges.length.must_equal 2
+      reducer.reduce.must_equal false
+      actual.edges.length.must_equal 2
+      actual.equals?(expected).must_equal true
     end
   end
 
   describe "badly sequenced reduction" do
-    before do
-      @graph = graph_from_wkt "MULTILINESTRING((0 1, 1 1),(0 0, 0 1))"
-      @reducer = Pathfinder::SerialReducer.new @graph
-    end
+    let(:initial) { graph_from_wkt_file('serial-002.wkt') }
+    let(:actual) { graph_from_wkt_file('serial-002.wkt') }
+    let(:expected) { graph_from_wkt_file('serial-002-expected.wkt') }
+    let(:reducer) { Pathfinder::SerialReducer.new actual }
 
     it "produce a single linestring LINESTRING (0 0, 0 1, 1 1)" do
-      @graph.edges.length.must_equal 2
-      @reducer.reduce.must_equal true
-      @graph.edges.length.must_equal 1
-      @graph.edges.first.to_s.must_equal "LINESTRING (0 0, 0 1, 1 1)"
+      actual.edges.length.must_equal 2
+      reducer.reduce.must_equal true
+      actual.edges.length.must_equal 1
+      actual.equals?(expected).must_equal true
     end
   end
 end
