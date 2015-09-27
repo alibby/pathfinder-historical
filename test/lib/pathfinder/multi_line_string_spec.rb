@@ -11,10 +11,22 @@ describe Pathfinder::MultiLineString do
     it "should have points" do
       mls.length.must_be :>, 0
     end
+  end
+  describe '#to_s' do
+    let(:jts_mls) {
+      m = Minitest::Mock.new
+      m.expect :to_s, 'MULTILINESTRING ()'
+    }
 
-    it "#to_s wraps the internal MultiLineString" do
-      @pf_mls.to_s.must_equal 'MULTILINESTRING ()'
-      @jts_mls.verify.must_equal true
+    let(:pf_mls) { Pathfinder::MultiLineString.new jts_mls }
+
+    it "should create WKT for the MLS" do
+      pf_mls.to_s.must_equal "MULTILINESTRING ()"
+    end
+
+    it "should produce the WKT by calling the unerlying JTS #to_s method" do
+      pf_mls.to_s
+      jts_mls.verify.must_equal true
     end
   end
 
