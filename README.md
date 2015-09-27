@@ -8,4 +8,3 @@ No joke.  Another try at this problem.
 * gem install bundler
 * bundle
 * rake test
-

@@ -101,10 +101,22 @@ class Pathfinder
       graph.get_successors(v)
     end
 
-    def to_s
-      factory = GeometryFactory.new PrecisionModel.new, 4326
+    def to_multi_line_string
+      factory = Pathfinder.geometry_factory
+
       linestrings = Array(edges).map(&:jts_line_string).to_java(::LineString)
-      factory.create_multi_line_string(linestrings).to_s
+      Pathfinder::MultiLineString.new factory.create_multi_line_string(linestrings)
+    end
+
+    def to_s
+      to_multi_line_string.to_s
+    end
+
+    def equals? graph
+      jts_mls1 = self.to_multi_line_string.jts_multi_line_string
+      jts_mls2 = self.to_multi_line_string.jts_multi_line_string
+
+      jts_mls1.equals_topo jts_mls2
     end
   end
 end

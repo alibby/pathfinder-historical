@@ -42,7 +42,7 @@ rescue OptionParser::InvalidOption => e
 end
 
 if options.file.nil?
-  puts "USAGE: #{File.basename $0} path/to/wkt"
+  $stderr.puts options_parser.help
   exit 1
 end
 

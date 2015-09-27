@@ -52,7 +52,7 @@ class Pathfinder
         .map { |a,b| [vertices[a], vertices[b]] }
         .map { |a,b| graph.edge a,b }
 
-      factory = GeometryFactory.new PrecisionModel.new, 4326
+      factory = Pathfinder.geometry_factory
 
       jts_line_strings = line_strings.map { |line_string| line_string.jts_line_string }.to_java(::LineString)
       Pathfinder::MultiLineString.new(factory.create_multi_line_string jts_line_strings)

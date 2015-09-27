@@ -21,6 +21,7 @@ require 'gippix'
 
 class Pathfinder
   DISTANCE_THRESHOLD = (7.7659658124485205 / 10_000)
+  PRECISION_SCALE = 1_000_000
   @@options = nil
 
   attr_reader :graph, :reducers
@@ -77,6 +78,13 @@ class Pathfinder
     end
   end
 
+  def self.precision_model
+    @@precision_mode ||= PrecisionModel.new PRECISION_SCALE
+  end
+
+  def self.geometry_factory
+    @@factory ||= GeometryFactory.new precision_model, 4326
+  end
 
   def initialize graph
     @graph = graph

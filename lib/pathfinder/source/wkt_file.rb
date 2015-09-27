@@ -7,8 +7,7 @@ class Pathfinder
       end
 
       def read
-        precision_model = PrecisionModel.new
-        factory = GeometryFactory.new precision_model, 4326
+        factory = Pathfinder.geometry_factory
         reader = WKTReader.new
 
         wkt_filereader = WKTFileReader.new @filename, reader

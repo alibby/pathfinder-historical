@@ -6,8 +6,7 @@ class Pathfinder
       end
 
       def read
-        pm = PrecisionModel.new
-        factory = GeometryFactory.new pm, 4326
+        factory = Pathfinder.factory
 
         linestrings = gpx_files.map do |gpx_file|
           points = gpx_to_linestring gpx_file

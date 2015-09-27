@@ -58,7 +58,7 @@
     end
 
     def point_at index
-      factory = GeometryFactory.new PrecisionModel.new, 4326
+      factory = Pathfinder.geometry_factory
       factory.create_point(indexed_line.extract_point(index))
     end
 
@@ -89,8 +89,7 @@
         .map { |c1, c2|   LineSegment.mid_point(c1, c2)        }
         .to_java(Coordinate)
 
-      pm = PrecisionModel.new
-      factory = GeometryFactory.new pm, 4326
+      factory = Pathfinder.geometry_factory
       Pathfinder::LineString.new factory.create_line_string coordinates
     end
   end

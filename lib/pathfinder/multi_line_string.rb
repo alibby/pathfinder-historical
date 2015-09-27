@@ -43,12 +43,17 @@ class Pathfinder
     end
 
     def point_at index
-      factory = GeometryFactory.new PrecisionModel.new, 4326
+      factory = Pathfinder.geometry_factory
       factory.create_point indexed_line.extract_point index
     end
 
+    def envelope
+      env = jts_multi_line_string.envelope_internal
+      OpenStruct.new( min_x: env.min_x, min_y: env.min_y, max_x: env.max_x, max_y: env.max_y )
+    end
+
     def self.break_line_string ls, indexes
-      factory = GeometryFactory.new PrecisionModel.new, 4326
+      factory = Pathfinder.geometry_factory
       index = LengthIndexedLine.new ls.jts_line_string
 
       line_strings = indexes.each_cons(2).map { |a,b| index.extract_line a,b }.to_java(::LineString)
@@ -72,7 +77,7 @@ class Pathfinder
 
       points = []
       Pathfinder::MultiLineString.new(sequenced).each { |ls| points += Array(ls) }
-      factory = GeometryFactory.new PrecisionModel.new, 4326
+      factory = Pathfinder.geometry_factory
       coordinates = points.uniq.map(&:coordinate).to_java Coordinate
       Pathfinder::LineString.new(factory.create_line_string coordinates)
     end

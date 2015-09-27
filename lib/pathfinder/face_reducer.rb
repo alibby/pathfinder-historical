@@ -143,7 +143,8 @@ class Pathfinder
 
     def join_adjacents_to_averaged_line face, averaged_line
       logger = Pathfinder.logger "FaceReducer#join_adjacents_to_averaged_line"
-      factory = GeometryFactory.new PrecisionModel.new, 4326
+      factory = Pathfinder.geometry_factory
+
       furthest_pair = face.furthest_vertex_pair
 
       for_removal = Set.new
@@ -197,86 +198,5 @@ class Pathfinder
     def visit! vertex_or_array
       Array(vertex_or_array).each { |vertex| @visited << vertex }
     end
-
-
-
-    # def reduce
-    #   modified! false
-    #   logger = Pathfinder.logger
-
-    #   loop do
-    #     face = find_a_face
-    #     logger.debug(self.class.name) { "Found face: " }
-    #     logger.debug(self.class.name) { face.to_s }
-    #     return false unless face
-
-    #     furthest_pair = face.furthest_vertex_pair
-    #     logger.debug(self.class.name) { "Furthest vertex pair: #{furthest_pair.map { |pt| pt.to_s }.join(' ')}" }
-    #     v1, v2 = furthest_pair
-
-    #     pair = face.longest_edge_multi_line_strings
-
-    #     logger.debug(self.class.name) { "Furthest linestring pair:" }
-    #     logger.debug(self.class.name) { pair.first.to_s }
-    #     logger.debug(self.class.name) { pair.last.to_s }
-
-    #     if too_far_apart? pair
-    #       logger.debug(self.class.name) { "Linstrings are too far apart.  Abandoning face reduction" }
-    #       next
-    #     end
-
-    #     mls1, mls2 = pair
-    #     ls1 = MultiLineString.ls_from_mls mls1
-    #     ls2 = MultiLineString.ls_from_mls mls2
-    #     averaged_line = LineString.average ls1, ls2
-    #     logger.debug(self.class.name) { "Created initial averaged line" }
-    #     logger.debug(self.class.name) { averaged_line.to_s }
-    #     logger.debug(self.class.name) { "Averaged line based on these linestrings" }
-    #     logger.debug(self.class.name) { ls1 }
-    #     logger.debug(self.class.name) { ls2 }
-
-    #     ls1 = MultiLineString.ls_from_mls mls1
-    #     ls2 = MultiLineString.ls_from_mls mls2
-    #     indexes = (indexes_for_multi_line_string(mls1) + indexes_for_multi_line_string(mls2)).sort
-    #     averaged_mls = MultiLineString.break_line_string averaged_line, indexes
-
-    #     averaged_mls.each { |ls| add_edge ls }
-    #     logger.debug(self.class.name) { "Averaged line as mls" }
-    #     logger.debug(self.class.name) { averaged_mls.to_s }
-
-    #     factory = GeometryFactory.new PrecisionModel.new, 4326
-    #     indexed_avg = LengthIndexedLine.new averaged_line.jts_line_string
-
-    #     [mls1, mls2].each do |mls|
-    #       logger.debug(self.class.name) { "Working with MLS item: " }
-    #       logger.debug(self.class.name) { mls.to_s }
-    #       first_points = mls.map { |line| line.first } - furthest_pair
-    #       first_points.each do |pt|
-    #         logger.debug(self.class.name) { "Working with pt: #{pt}" }
-    #         index = mls.index pt
-    #         logger.debug(self.class.name) { "Index for new point on mls is: #{index}" }
-    #         new_pt = factory.create_point indexed_avg.extract_point index
-    #         logger.debug(self.class.name) { "New Point: #{new_pt}" }
-    #         face.off_face_edges(pt).each do |edge|
-    #           logger.debug(self.class.name) { "Off Face Edge: " }
-    #           logger.debug(self.class.name) { edge.to_s }
-    #           r_pts = Array(edge)
-    #           r_pts[ r_pts.first == pt ? 0 : -1 ] = new_pt
-
-    #           replacement_edge = factory.create_line_string r_pts.map(&:coordinate).to_java(Coordinate)
-    #           logger.debug(self.class.name) { "Replacement edge is:" }
-    #           logger.debug(self.class.name) { replacement_edge.to_s }
-    #           add_edge Pathfinder::LineString.new replacement_edge
-    #           remove_edge edge
-    #         end
-    #       end
-    #     end
-
-    #     for_removal = face.each_cons(2).map { |a,b| graph.edge(a,b) }
-    #     for_removal.each { |edge| remove_edge edge }
-    #   end
-    #   modified?
-    # end
-
   end
 end

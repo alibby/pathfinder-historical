@@ -35,9 +35,7 @@ class Pathfinder
     end
 
     def edge_from_consecutive_edges edge1, edge2
-      pm = PrecisionModel.new
-      factory = GeometryFactory.new pm, 4326
-
+      factory = Pathfinder.geometry_factory
       coordinates_for_new_edge = (Array(edge1.coordinates) + Array(edge2.coordinates)[1..-1]).to_java(Coordinate)
       jts_line_string = factory.create_line_string coordinates_for_new_edge
       Pathfinder::LineString.new jts_line_string

@@ -9,9 +9,7 @@ class Pathfinder
     private
 
     def pm
-      @pm ||= PrecisionModel.new
-
-      @pm
+      Pathfinder.precision_model
     end
 
     def noder
@@ -21,9 +19,7 @@ class Pathfinder
     end
 
     def factory
-      @factory ||= GeometryFactory.new pm, 4326
-
-      @factory
+      Pathfinder.geometry_factory
     end
 
     public

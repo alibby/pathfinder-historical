@@ -1,13 +1,6 @@
 
 require_relative '../../test_helper'
 
-def graph_from_wkt wkt
-  rdr = WKTReader.new(GeometryFactory.new(PrecisionModel.new, 4326))
-  initial = rdr.read(wkt)
-  mls = Pathfinder::MultiLineString.new initial
-  Pathfinder::Graph.from_multi_line_string mls
-end
-
 describe Pathfinder::SerialReducer do
   describe "a single linestring" do
     before do
