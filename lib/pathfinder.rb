@@ -46,7 +46,7 @@ class Pathfinder
     pathfinder.add_reducer Pathfinder::FaceReducer unless options.without_face
 
     logger.info "Using reducers #{ pathfinder.reducers.map { |r| r.class.name }.join(', ')}"
-    logger.info "Performing reduction"
+    logger.info "Reduction starting"
 
     pathfinder.reduce
     logger.info "Reduction complete."

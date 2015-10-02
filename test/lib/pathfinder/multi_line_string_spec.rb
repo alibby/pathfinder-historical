@@ -12,6 +12,7 @@ describe Pathfinder::MultiLineString do
       mls.length.must_be :>, 0
     end
   end
+
   describe '#to_s' do
     let(:jts_mls) {
       m = Minitest::Mock.new
