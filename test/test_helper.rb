@@ -7,7 +7,12 @@ require 'fileutils'
 require 'ostruct'
 require 'erb'
 
-Pathfinder.configure OpenStruct.new
+# Pathfinder.configure OpenStruct.new log: open('./tmp/test.log', 'w+'), log_level: Logger::DEBUG
+Pathfinder.configure OpenStruct.new log: STDERR, log_level: Logger::DEBUG
+
+def geom_from_wkt wkt
+  WKTReader.new(Pathfinder.geometry_factory).read(wkt)
+end
 
 def graph_from_wkt wkt
   rdr = WKTReader.new(Pathfinder.geometry_factory)
@@ -28,9 +33,7 @@ module CreateJumpOnFail
   def before_teardown
     super
     if self.failures.length > 0
-      # @failures ||= []
-      # @failures << self.name
-      JumpResultBuilder.new(self).build if self.failures.length > 0
+      JumpResultBuilder.new(self).call if self.failures.length > 0
     end
   end
 end
@@ -48,11 +51,11 @@ class JumpResultBuilder
     @test = test
   end
 
-  def build
+  def call
     FileUtils.mkdir_p destination_folder
     File.write initial_file, test.initial.to_s
     File.write expected_file, test.expected.to_s
-    File.write actual_file, test.actual_file.to_s
+    File.write actual_file, test.actual.to_s
 
     output = ERB.new(File.read TEMPLATE).result(binding)
     File.write jump_file, output

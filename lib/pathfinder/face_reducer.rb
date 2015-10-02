@@ -18,31 +18,13 @@ class Pathfinder
       logger = Pathfinder.logger 'FaceReducer#reduce'
 
       loop do
-        face = find_a_face
-        logger.debug "Found face: "
-        logger.debug face.to_s
-        break unless face
-        begin
-          v1, v2 = face.furthest_vertex_pair
-          pair = face.longest_edge_multi_line_strings
+        break unless face = find_a_face
+        logger.debug "Face: #{face}"
+        pair = face.longest_edge_multi_line_strings
 
-          logger.debug "Furthest vertexes: #{ [v1, v2].map { |v| v.to_s }.join(' ') }"
-          next if too_far_apart? pair
-          averaged_line = replace_long_linestrings *pair
-          join_adjacents_to_averaged_line face, averaged_line
-          pair.each { |mls|
-            mls.each { |ls|
-              logger.debug ls.first.to_s
-              logger.debug ls.last.to_s
-              e = graph.edge ls.first, ls.last
-              logger.debug e.to_s
-              remove_edge e if e
-            }
-          }
+        next if too_far_apart? pair
 
-        rescue AssertionFailedException => e
-          logger.warn(self.class.name) { e.to_s }
-        end
+        reduce_face face
       end
 
       logger.debug "#reduce returning modifcation status #{modified?}"
@@ -56,7 +38,7 @@ class Pathfinder
 
       # logger.debug('find_a_face') { visited.map { |p| p.to_s }.join ' ' }
       graph.vertices.each do |start_vertex|
-        logger.debug "#{visited?(start_vertex) ? "Visited" : "Unvisited"} Vertex: #{start_vertex}"
+        # logger.debug "#{visited?(start_vertex) ? "Visited" : "Unvisited"} Vertex: #{start_vertex}"
         next if visited? start_vertex
         visit! start_vertex
         face_vertices = traverse_face start_vertex
@@ -94,54 +76,60 @@ class Pathfinder
       return false
     end
 
-    def replace_long_linestrings mls1, mls2
-      logger = Pathfinder.logger 'MEMEMEMEME'
-      indexes = (indexes_for_multi_line_string(mls1) + indexes_for_multi_line_string(mls2)).sort.uniq
+    def reduce_face face
+      logger = Pathfinder.logger 'reduce_face'
+      begin
+        pair = face.longest_edge_multi_line_strings
 
-      logger.debug "Indexes: #{indexes}"
+        averaged_mls = average_line *pair
+        averaged_mls.each { |ls| add_edge ls }
+        join_adjacents_to_averaged_line face, averaged_mls
+        pair.each { |mls|
+          mls.each { |ls|
+            # logger.debug ls.first.to_s
+            # logger.debug ls.last.to_s
+            e = graph.edge ls.first, ls.last
+            # logger.debug e.to_s
+            remove_edge e if e
+          }
+        }
 
-      averaged_line = average_line mls1, mls2
-
-      logger = Pathfinder.logger
-      logger.debug('replace_long_linestrings') { "Averaged Line: #{averaged_line}" }
-      MultiLineString.break_line_string(averaged_line, indexes).each do |ls|
-        add_edge ls
+      rescue AssertionFailedException => e
+        logger.warn(self.class.name) { e.to_s }
       end
-
-      # [mls1, mls2].each { |mls|
-      #   mls.each { |ls|
-      #     logger.debug ls.first.to_s
-      #     logger.debug ls.last.to_s
-      #     e = graph.edge ls.first, ls.last
-      #     logger.debug e.to_s
-      #     remove_edge e if e
-      #   }
-      # }
-      # mls1.each { |ls|
-      #   e = graph.edge(ls.first, ls.last)
-      #   remove_edge e
-      # }
-      # mls2.each { |ls| remove_edge ls }
-
-      averaged_line
     end
 
+    # def average_mls mls1, mls2
+    #   logger = Pathfinder.logger 'averaged_mls'
+    #   indexes = (mls1.endpoint_indexes + mls2.endpoint_indexes).sort.uniq
+
+    #   logger.debug { "Indexes: #{indexes}" }
+
+    #   averaged_line = average_line mls1, mls2
+
+    #   logger = Pathfinder.logger
+    #   logger.debug { "Averaged Line: #{averaged_line}" }
+    #   MultiLineString.break_line_string(averaged_line, indexes).each do |ls|
+    #     add_edge ls
+    #   end
+
+    #   averaged_line
+    # end
+
     def average_line mls1, mls2
-      logger = Pathfinder.logger
+      logger = Pathfinder.logger "FaceReducer#average_line"
+      indexes = (mls1.endpoint_indexes + mls2.endpoint_indexes).sort.uniq
+      logger.debug "Indexes for new segment: #{indexes}"
 
       ls1 = MultiLineString.ls_from_mls mls1
       ls2 = MultiLineString.ls_from_mls mls2
-      averaged_line = LineString.average ls1, ls2
-      # logger.debug(self.class.name) { "Created initial averaged line" }
-      # logger.debug(self.class.name) { averaged_line.to_s }
-      # logger.debug(self.class.name) { "Averaged line based on these linestrings" }
-      # logger.debug(self.class.name) { ls1 }
-      # logger.debug(self.class.name) { ls2 }
 
-      averaged_line
+      averaged_line = LineString.average ls1, ls2
+      logger.debug "Averaged Line: #{averaged_line}"
+      MultiLineString.break_line_string(averaged_line, indexes)
     end
 
-    def join_adjacents_to_averaged_line face, averaged_line
+    def join_adjacents_to_averaged_line face, averaged_mls
       logger = Pathfinder.logger "FaceReducer#join_adjacents_to_averaged_line"
       factory = Pathfinder.geometry_factory
 
@@ -156,9 +144,10 @@ class Pathfinder
           logger.debug "Working with pt: #{pt}"
           index = mls.index pt
           logger.debug "Index for new point on mls is: #{index}"
-          new_pt = averaged_line.point_at index
+          new_pt = averaged_mls.point_at index
           logger.debug "New Point: #{new_pt}"
           face.off_face_edges(pt).each do |edge|
+            remove_edge edge
             logger.debug "Off Face Edge: "
             logger.debug edge.to_s
             r_pts = Array(edge)
@@ -172,23 +161,8 @@ class Pathfinder
           end
         end
 
-        for_removal.each { |edge| remove_edge edge }
+        # for_removal.each { |edge| remove_edge edge }
       end
-
-    #     for_removal = face.each_cons(2).map { |a,b| graph.edge(a,b) }
-    #     for_removal.each { |edge| remove_edge edge }
-    #   end
-
-
-    end
-
-    def indexes_for_multi_line_string mls
-      index = LengthIndexedLine.new mls.jts_multi_line_string
-      indexes = mls
-        .map { |ls| [ls.first, ls.last] }
-        .flatten
-        .uniq
-        .map { |pt| index.index_of pt.coordinate }
     end
 
     def visited? vertex

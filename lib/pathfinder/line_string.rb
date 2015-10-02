@@ -82,11 +82,11 @@
 
     def self.average(ls1, ls2)
       ls1, ls2 = ls2, ls1 if ls2.length > ls1.length
-
+      pm = Pathfinder.precision_model
       coordinates = ls1
         .map { |pt1|      [ pt1, ls2.closest_point_to(pt1) ] }
-        .map { |pt1, pt2| [ pt1.coordinate, pt2.coordinate   ] }
-        .map { |c1, c2|   LineSegment.mid_point(c1, c2)        }
+        .map { |pt1, pt2| [ pt1.coordinate, pt2.coordinate ] }
+        .map { |c1, c2|   LineSegment.mid_point(c1, c2)      }
         .to_java(Coordinate)
 
       factory = Pathfinder.geometry_factory

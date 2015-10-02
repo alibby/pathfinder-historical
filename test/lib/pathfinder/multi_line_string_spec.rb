@@ -83,5 +83,25 @@ describe Pathfinder::MultiLineString do
         end
       end
     end
+
+    describe '#break_line_string' do
+      let(:line_string) {
+        x = geom_from_wkt 'LINESTRING (-75.43788 40.109658, -75.437838 40.1096495, -75.437731 40.109633, -75.4376485 40.109665, -75.437619 40.109662, -75.4375575 40.1096645, -75.437471 40.10967, -75.437378 40.1096245, -75.4373255 40.1096215, -75.437258 40.109625) ' 
+        Pathfinder::LineString.new x
+      }
+      let(:indexes) { [0.0, 0.0003445352185367185, 0.0006467178418499554, 0.0006631721945041522] }
+
+      it "should not suck" do
+        x = Pathfinder::MultiLineString.break_line_string line_string, indexes
+        pm = Pathfinder.precision_model
+        indexes.each do |index|
+          puts "#{index} #{line_string.point_at(index)} #{pm.make_precise(index)}"
+        end
+
+        x.each do |ls|
+          puts ls
+        end
+      end
+    end
   end
 end

@@ -27,6 +27,8 @@ class Pathfinder
       if ! graph.contains_edge? line_string
         logger.debug "Graph does not contain #{line_string}"
         logger.debug "LineString class: #{line_string.class.name}"
+        graph.dump_to_file
+        exit 1
       end
 
       if ! graph.remove_edge line_string

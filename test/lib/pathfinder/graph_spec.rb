@@ -2,6 +2,27 @@
 require_relative '../../test_helper'
 
 describe Pathfinder::Graph do
+  describe '#equals?' do
+    describe "from different MULTILINESTRINGs" do
+      let(:g1) { graph_from_wkt("MULTILINESTRING((-1 -1, 1 1))") }
+      # let(:g2) { graph_from_wkt("MULTILINESTRING((0 0, 5 5))") }
+      let(:g2) { graph_from_wkt("MULTILINESTRING((0 0, 5 19))") }
+
+      it "should not be equal?" do
+        g1.equals?(g2).must_equal false
+      end
+    end
+
+    describe "from identical MULTILINESTRINGs" do
+      let(:g1) { graph_from_wkt("MULTILINESTRING((0 0, 1 1))") }
+      let(:g2) { graph_from_wkt("MULTILINESTRING((0 0, 1 1))") }
+
+      it "should be equal?" do
+        g1.equals?(g2).must_equal true
+      end
+    end
+  end
+
   describe '#add_edge' do
     describe "when passed something with no first() method" do
       before do

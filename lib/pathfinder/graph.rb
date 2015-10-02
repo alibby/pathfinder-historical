@@ -105,9 +105,15 @@ class Pathfinder
       to_multi_line_string.to_s
     end
 
+    def dump_to_file(filename = "./tmp/graph.wkt")
+      logger = Pathfinder.logger
+      logger.debug { "Dumping graph to #{filename}" }
+      open(filename,'w+') { |fh| fh.puts self.to_s }
+    end
+
     def equals? graph
       jts_mls1 = self.to_multi_line_string.jts_multi_line_string
-      jts_mls2 = self.to_multi_line_string.jts_multi_line_string
+      jts_mls2 = graph.to_multi_line_string.jts_multi_line_string
 
       jts_mls1.equals_topo jts_mls2
     end

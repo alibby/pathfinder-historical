@@ -6,7 +6,7 @@ class Pathfinder
       end
 
       def read
-        factory = Pathfinder.factory
+        factory = Pathfinder.geometry_factory
 
         linestrings = gpx_files.map do |gpx_file|
           points = gpx_to_linestring gpx_file

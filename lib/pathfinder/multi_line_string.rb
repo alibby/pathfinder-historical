@@ -47,6 +47,15 @@ class Pathfinder
       indexed_line.index_of pt.coordinate
     end
 
+    def endpoint_indexes
+      self
+        .map { |ls| [ls.first, ls.last] }
+        .flatten
+        .uniq
+        .map { |pt| self.index pt }
+    end
+
+
     def point_at index
       factory = Pathfinder.geometry_factory
       factory.create_point indexed_line.extract_point index
@@ -59,7 +68,8 @@ class Pathfinder
 
     def self.break_line_string ls, indexes
       factory = Pathfinder.geometry_factory
-      index = LengthIndexedLine.new ls.jts_line_string
+      precision_model = Pathfinder.precision_model
+      index = precision_model.make_precise LengthIndexedLine.new ls.jts_line_string
 
       line_strings = indexes.each_cons(2).map { |a,b| index.extract_line a,b }.to_java(::LineString)
       new factory.create_multi_line_string line_strings
