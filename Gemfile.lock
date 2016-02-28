@@ -1,5 +1,5 @@
 PATH
-  remote: ../development/gippix
+  remote: ../gippix
   specs:
     gippix (0.0.1)
       nokogiri (~> 1.1, >= 1.1.4)
