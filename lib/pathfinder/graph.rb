@@ -8,6 +8,7 @@ require 'pp'
 
 class Pathfinder
   class Graph
+    EQUALITY_DISTANCE_TOLERANCE = 0.000001
 
     private
 
@@ -112,10 +113,11 @@ class Pathfinder
     end
 
     def equals? graph
-      jts_mls1 = self.to_multi_line_string.jts_multi_line_string
-      jts_mls2 = graph.to_multi_line_string.jts_multi_line_string
+      mls1, mls2 = self.to_multi_line_string, graph.to_multi_line_string
+      jts_mls1 = mls1.jts_multi_line_string
+      jts_mls2 = mls2.jts_multi_line_string
 
-      jts_mls1.equals_topo jts_mls2
+      jts_mls1.norm.equals_exact(jts_mls2.norm,EQUALITY_DISTANCE_TOLERANCE)
     end
   end
 end

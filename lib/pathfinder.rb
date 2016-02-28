@@ -6,6 +6,7 @@ require_relative 'pathfinder/source/wkt_file'
 require_relative 'pathfinder/source/gpx_directory'
 require_relative 'pathfinder/noder'
 require_relative 'pathfinder/graph'
+require_relative 'pathfinder/hausdorff_distance_methods'
 require_relative 'pathfinder/line_string'
 require_relative 'pathfinder/multi_line_string'
 require_relative 'pathfinder/reducer'
@@ -19,7 +20,7 @@ require 'logger'
 require 'gippix'
 
 class Pathfinder
-  DISTANCE_THRESHOLD = (7.7659658124485205 / 10_000)
+  DISTANCE_THRESHOLD = 30 # meters
   PRECISION_SCALE = 1_000_000
   @@options = nil
 
@@ -78,7 +79,7 @@ class Pathfinder
   end
 
   def self.precision_model
-    @@precision_mode ||= PrecisionModel.new PRECISION_SCALE
+    @@precision_model ||= PrecisionModel.new PRECISION_SCALE
   end
 
   def self.geometry_factory

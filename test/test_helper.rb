@@ -7,8 +7,10 @@ require 'fileutils'
 require 'ostruct'
 require 'erb'
 
-# Pathfinder.configure OpenStruct.new log: open('./tmp/test.log', 'w+'), log_level: Logger::DEBUG
-Pathfinder.configure OpenStruct.new log: STDERR, log_level: Logger::DEBUG
+Pathfinder.configure OpenStruct.new log: open("./tmp/test-#{$$}.log", 'w+'), log_level: Logger::DEBUG
+# Pathfinder.configure OpenStruct.new log: STDERR, log_level: Logger::DEBUG
+
+# Pathfinder.configure OpenStruct.new
 
 def geom_from_wkt wkt
   WKTReader.new(Pathfinder.geometry_factory).read(wkt)

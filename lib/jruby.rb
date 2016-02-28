@@ -8,7 +8,7 @@ java_import com.vividsolutions.jts.geom.GeometryFactory
 java_import com.vividsolutions.jts.geom.Geometry
 java_import com.vividsolutions.jts.geom.GeometryCollection
 java_import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
-
+java_import com.vividsolutions.jts.geom.IntersectionMatrix
 java_import com.vividsolutions.jts.geom.LineString
 java_import com.vividsolutions.jts.geom.LineSegment
 java_import com.vividsolutions.jts.geom.MultiLineString
@@ -25,6 +25,7 @@ java_import com.vividsolutions.jts.noding.SinglePassNoder
 
 java_import com.vividsolutions.jts.operation.linemerge.LineSequencer
 
+java_import com.vividsolutions.jts.linearref.LocationIndexedLine
 java_import com.vividsolutions.jts.linearref.LengthIndexedLine
 java_import com.vividsolutions.jts.algorithm.Angle
 
@@ -39,7 +40,7 @@ java_import java.util.ArrayList
 class ::LineString
   def points
     0.upto(num_points - 1).map do |i|
-      self.point_n(i)
+      self.get_point_n(i)
     end
   end
 
@@ -57,8 +58,7 @@ end
 class MultiLineString
   def geometries
     0.upto(num_geometries - 1).map do |i|
-      self.geometry_n(i)
+      self.get_geometry_n(i)
     end
   end
 end
-

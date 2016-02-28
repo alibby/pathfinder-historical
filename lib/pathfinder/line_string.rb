@@ -2,6 +2,7 @@
  class Pathfinder
   class LineString
     include Enumerable
+    include Pathfinder::HausdorffDistanceMethods
 
     def initialize linestring
       @linestring = linestring
@@ -45,11 +46,8 @@
       to_s
     end
 
-    def hausdorff_distance line_string
-      DiscreteHausdorffDistance.distance self.jts_line_string, line_string.jts_line_string
-    end
-
     def indexed_line
+      # @indexed_line ||= LocationIndexedLine.new  LineSequencer.sequence self.jts_line_string
       @indexed_line ||= LengthIndexedLine.new  LineSequencer.sequence self.jts_line_string
     end
 
@@ -65,6 +63,10 @@
     # protected
 
     def jts_line_string
+      @linestring
+    end
+
+    def jts_geometry
       @linestring
     end
 

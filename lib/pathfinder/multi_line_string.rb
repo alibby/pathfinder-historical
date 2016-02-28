@@ -1,6 +1,7 @@
 class Pathfinder
   class MultiLineString
     include Enumerable
+    include Pathfinder::HausdorffDistanceMethods
 
     def initialize mls
       @mls = mls
@@ -35,11 +36,12 @@ class Pathfinder
       @mls
     end
 
-    def hausdorff_distance line_string
-      DiscreteHausdorffDistance.distance self.jts_multi_line_string, line_string.jts_multi_line_string
+    def jts_geometry
+      @mls
     end
 
     def indexed_line
+      # @indexed_line ||= LocationIndexedLine.new  LineSequencer.sequence self.jts_multi_line_string
       @indexed_line ||= LengthIndexedLine.new  LineSequencer.sequence self.jts_multi_line_string
     end
 
@@ -67,11 +69,20 @@ class Pathfinder
     end
 
     def self.break_line_string ls, indexes
+      logger = Pathfinder.logger 'MultiLineString#break_line_string'
       factory = Pathfinder.geometry_factory
-      precision_model = Pathfinder.precision_model
-      index = precision_model.make_precise LengthIndexedLine.new ls.jts_line_string
+      # index = LocationIndexedLine.new ls.jts_line_string
+      index = LengthIndexedLine.new ls.jts_line_string
 
-      line_strings = indexes.each_cons(2).map { |a,b| index.extract_line a,b }.to_java(::LineString)
+      line_strings = indexes
+        .each_cons(2)
+        .map { |a,b|
+          logger.debug "A,B: #{a} #{b}"
+          index.extract_line a,b
+        }.to_java(::LineString)
+      line_strings.each do |ls|
+        logger.debug "LS: #{ls}"
+      end
       new factory.create_multi_line_string line_strings
     end
 

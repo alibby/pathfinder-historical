@@ -117,14 +117,17 @@ class Pathfinder
     # end
 
     def average_line mls1, mls2
-      logger = Pathfinder.logger "FaceReducer#average_line"
-      indexes = (mls1.endpoint_indexes + mls2.endpoint_indexes).sort.uniq
-      logger.debug "Indexes for new segment: #{indexes}"
-
       ls1 = MultiLineString.ls_from_mls mls1
       ls2 = MultiLineString.ls_from_mls mls2
-
       averaged_line = LineString.average ls1, ls2
+
+      logger = Pathfinder.logger "FaceReducer#average_line"
+      logger.debug "Averaging 1: #{mls1}"
+      logger.debug "Averaging 2: #{mls2}"
+      # logger.debug (mls1.endpoint_indexes + mls2.endpoint_indexes).sort.uniq
+      indexes = (mls1.endpoint_indexes + mls2.endpoint_indexes).uniq { |i| averaged_line.point_at i }.sort
+      logger.debug "Indexes for new segment: #{indexes.map { |i| i.to_s }.join(' ') }"
+
       logger.debug "Averaged Line: #{averaged_line}"
       MultiLineString.break_line_string(averaged_line, indexes)
     end

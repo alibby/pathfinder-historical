@@ -58,11 +58,10 @@ class Pathfinder
       @modified
     end
 
-
     def too_far_apart? pair
       logger = Pathfinder.logger
       edge1, edge2 = pair
-      distance = edge1.hausdorff_distance(edge2)
+      distance = edge1.hausdorff_distance_meters(edge2)
 
       if distance > Pathfinder::DISTANCE_THRESHOLD
         logger.debug(self.class.name) { "Longest linestrings too far apart: #{distance}" }
@@ -72,6 +71,10 @@ class Pathfinder
       else
         false
       end
+    end
+
+    def distance2meters(dist)
+      dist * (Math::PI/180) * 6378137
     end
   end
 end
