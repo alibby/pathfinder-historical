@@ -28,4 +28,3 @@ rescue java.io.FileNotFoundException => e
   puts "ERROR: #{e}"
   exit 2
 end
-

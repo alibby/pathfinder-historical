@@ -86,10 +86,7 @@ class Pathfinder
         join_adjacents_to_averaged_line face, averaged_mls
         pair.each { |mls|
           mls.each { |ls|
-            # logger.debug ls.first.to_s
-            # logger.debug ls.last.to_s
             e = graph.edge ls.first, ls.last
-            # logger.debug e.to_s
             remove_edge e if e
           }
         }
@@ -99,22 +96,6 @@ class Pathfinder
       end
     end
 
-    # def average_mls mls1, mls2
-    #   logger = Pathfinder.logger 'averaged_mls'
-    #   indexes = (mls1.endpoint_indexes + mls2.endpoint_indexes).sort.uniq
-
-    #   logger.debug { "Indexes: #{indexes}" }
-
-    #   averaged_line = average_line mls1, mls2
-
-    #   logger = Pathfinder.logger
-    #   logger.debug { "Averaged Line: #{averaged_line}" }
-    #   MultiLineString.break_line_string(averaged_line, indexes).each do |ls|
-    #     add_edge ls
-    #   end
-
-    #   averaged_line
-    # end
 
     def average_line mls1, mls2
       ls1 = MultiLineString.ls_from_mls mls1
@@ -124,11 +105,13 @@ class Pathfinder
       logger = Pathfinder.logger "FaceReducer#average_line"
       logger.debug "Averaging 1: #{mls1}"
       logger.debug "Averaging 2: #{mls2}"
-      # logger.debug (mls1.endpoint_indexes + mls2.endpoint_indexes).sort.uniq
-      indexes = (mls1.endpoint_indexes + mls2.endpoint_indexes).uniq { |i| averaged_line.point_at i }.sort
-      logger.debug "Indexes for new segment: #{indexes.map { |i| i.to_s }.join(' ') }"
 
+      indexes = (mls1.endpoint_indexes + mls2.endpoint_indexes)
+        .uniq { |i| averaged_line.point_at i }.sort
+
+      logger.debug "Indexes for new segment: #{indexes.map { |i| i.to_s }.join(' ') }"
       logger.debug "Averaged Line: #{averaged_line}"
+
       MultiLineString.break_line_string(averaged_line, indexes)
     end
 

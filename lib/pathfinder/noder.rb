@@ -39,8 +39,9 @@ class Pathfinder
         factory.createLineString line.get_coordinates
       }.to_java(::LineString)
 
-
-      Pathfinder::MultiLineString.new factory.createMultiLineString linestrings
+      mls = Pathfinder::MultiLineString.new factory.createMultiLineString linestrings
+      mls.normalize!
+      mls
     end
   end
 end

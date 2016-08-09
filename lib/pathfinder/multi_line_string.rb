@@ -86,6 +86,10 @@ class Pathfinder
       new factory.create_multi_line_string line_strings
     end
 
+    def normalize!
+      @mls.normalize
+      self
+    end
     # private
 
     def points
