@@ -11,12 +11,14 @@ class Pathfinder
     end
 
     def reduce
-      for_removal = graph.edges.select { |edge| edge.first == edge.last }
-      for_removal.each { |edge|
-        graph.remove_edge edge
-      }
+      edge_for_removal = graph.edges.select { |edge| edge.first == edge.last }.first
 
-      for_removal.length > 0
+      if edge_for_removal
+        graph.remove_edge edge_for_removal
+        true
+      else
+        false
+      end
     end
   end
 end

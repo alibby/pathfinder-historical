@@ -30,6 +30,7 @@ class Pathfinder
         graph.remove_edge edge1
         graph.remove_edge edge2
         graph.add_edge new_edge
+        break
       end
 
       @modified

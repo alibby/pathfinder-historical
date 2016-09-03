@@ -17,6 +17,7 @@ class Pathfinder
         add_edge new_edge
         remove_edge edge1
         remove_edge edge2
+        return modified?
       end
 
       modified?

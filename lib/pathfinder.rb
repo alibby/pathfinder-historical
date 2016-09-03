@@ -24,7 +24,8 @@ class Pathfinder
   PRECISION_SCALE = 1_000_000
   @@options = nil
 
-  attr_reader :graph, :reducers
+  attr_accessor :graph
+  attr_accessor :parallel_reducer, :serial_reducer, :tightloop_reducer, :face_reducer
 
   class NullLogger
     def debug(*); end
@@ -41,12 +42,8 @@ class Pathfinder
     logger.info "Read base network from #{options.file}"
     graph = Pathfinder::Graph.from_multi_line_string(mls)
     pathfinder = Pathfinder.new(graph)
-    pathfinder.add_reducer Pathfinder::ParallelReducer
-    pathfinder.add_reducer Pathfinder::SerialReducer
-    pathfinder.add_reducer Pathfinder::TightLoopReducer
-    pathfinder.add_reducer Pathfinder::FaceReducer unless options.without_face
 
-    logger.info "Using reducers #{ pathfinder.reducers.map { |r| r.class.name }.join(', ')}"
+    # logger.info "Using reducers #{ pathfinder.reducers.map { |r| r.class.name }.join(', ')}"
     logger.info "Reduction starting"
 
     pathfinder.reduce
@@ -88,20 +85,42 @@ class Pathfinder
 
   def initialize graph
     @graph = graph
-    @reducers = []
+    @parallel_reducer = Pathfinder::ParallelReducer.new graph
+    @serial_reducer = Pathfinder::SerialReducer.new graph
+    @tightloop_reducer = Pathfinder::TightLoopReducer.new graph
+    @face_reducer =  Pathfinder::FaceReducer.new graph
   end
 
-  def add_reducer klass
-    @reducers << klass.new(graph)
-    self
+  # def add_reducer klass
+  #   @reducers << klass.new(graph)
+  #   self
+  # end
+
+  def serial_reduce
+    modified = false
+    while serial_reducer.reduce == true do
+      modified = true
+    end
+    modified
   end
+
 
   def call
-    return false if @reducers.length == 0
+    reducers = [
+      proc { serial_reduce },
+      proc { parallel_reducer.reduce },
+      proc { serial_reduce },
+      proc { face_reducer.reduce },
+      proc { serial_reduce },
+      proc { tightloop_reducer.reduce }
+    ]
 
     loop do
-      results = reducers.map { |reducer| reducer.reduce }
-      break if results.all? { |s| s == false }
+      break unless reducers.any?(&:call)
+    end
+
+    loop do
+      break unless reducers.any?(&:call)
     end
   end
 

@@ -25,6 +25,7 @@ class Pathfinder
         next if too_far_apart? pair
 
         reduce_face face
+        return modified?
       end
 
       logger.debug "#reduce returning modifcation status #{modified?}"
