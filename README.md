@@ -1,10 +1,4 @@
-# 2015 Crack at a Pathfinder
+# Pathfinder
 
-No joke.  Another try at this problem.
-
-# Development
-
-* Install jruby 9
-* gem install bundler
-* bundle
-* rake test
+A system to average together geometries derived from
+GPS data to attempt to discover nature trail networks.
