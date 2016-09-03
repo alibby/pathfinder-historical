@@ -1,18 +1,14 @@
-PATH
-  remote: ../gippix
-  specs:
-    gippix (0.0.1)
-      nokogiri (~> 1.1, >= 1.1.4)
-
 GEM
   remote: https://rubygems.org/
   specs:
     backports (3.6.6)
     builder (3.2.2)
+    gippix (0.0.2)
+      nokogiri (~> 1.1, >= 1.1.4)
     haml (4.0.7)
       tilt
     multi_json (1.11.2)
-    nokogiri (1.6.6.2-java)
+    nokogiri (1.6.8-java)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
@@ -39,7 +35,7 @@ PLATFORMS
 
 DEPENDENCIES
   builder
-  gippix!
+  gippix
   haml
   rake
   sinatra
