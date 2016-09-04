@@ -52,7 +52,7 @@ class Pathfinder
     end
 
     def out_edges v
-      graph.get_out_edges(v)
+      Array(graph.get_out_edges(v))
     end
 
     def edge_count(v = :whole_graph)

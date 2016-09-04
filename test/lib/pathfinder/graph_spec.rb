@@ -2,6 +2,23 @@
 require_relative '../../test_helper'
 
 describe Pathfinder::Graph do
+  describe '#out_edges' do
+    describe "joejoe" do
+      let(:graph) { graph_from_wkt "MULTILINESTRING((0 1, 1 1),(0 0, 0 1))" }
+      let(:edges) {
+        vertex = graph.vertices.first
+        graph.out_edges vertex
+      }
+
+      it "should give us an enumerable" do
+        edges.class.included_modules.must_include Enumerable
+      end
+
+      it "must respond to #last" do
+        edges.must_respond_to(:last)
+      end
+    end
+  end
   describe '#equals?' do
     describe "from different MULTILINESTRINGs" do
       let(:g1) { graph_from_wkt("MULTILINESTRING((-1 -1, 1 1))") }
