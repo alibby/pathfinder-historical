@@ -4,5 +4,5 @@ tmp
 .DS_Store
 
 .swp
-
+.*.swp
 pathfinder.log
