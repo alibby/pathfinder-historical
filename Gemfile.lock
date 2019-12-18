@@ -8,10 +8,13 @@ GEM
     haml (5.1.2)
       temple (>= 0.8.0)
       tilt
+    mini_portile2 (2.4.0)
     multi_json (1.13.1)
     mustermann (1.0.3)
+    nokogiri (1.10.4)
+      mini_portile2 (~> 2.4.0)
     nokogiri (1.10.4-java)
-    rack (2.0.7)
+    rack (2.0.8)
     rack-protection (2.0.5)
       rack
     rake (12.3.3)
@@ -34,6 +37,7 @@ GEM
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   builder
